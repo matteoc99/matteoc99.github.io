@@ -6,3 +6,42 @@ body{
     font-weight: 500;
     margin-left: 16px;
 }
+
+.parallax-container{
+    height: 500px;
+}
+p.about{
+    margin: 20px 30px;
+    font-weight: 400;
+}
+div#about:focus{
+    border: none;
+}
+
+div#about{
+    margin: 10px 15px;
+    padding: 10px;
+}
+
+div#work{
+    margin: 10px 15px;
+    padding: 10px;
+}
+
+div#curriculum{
+    margin: 10px 15px;
+    padding: 10px;
+}
+
+div#contact{
+    margin: 10px 15px;
+    padding: 10px;
+}
+
+#fab{
+    position: fixed;
+    z-index: 2;
+    right: 0;
+    bottom: 0;
+    margin: 20px;
+}
