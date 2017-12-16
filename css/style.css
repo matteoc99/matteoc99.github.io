@@ -38,6 +38,7 @@ div#contact{
     padding: 10px;
 }
 
+
 #fab{
     position: fixed;
     z-index: 2;
@@ -45,3 +46,5 @@ div#contact{
     bottom: 0;
     margin: 20px;
 }
+
+
