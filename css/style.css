@@ -54,5 +54,16 @@ img.card-image{
 }
 
 a.footer-link{
-    color: #ffa4b1;
+    color: #bebfff;
+
+}
+.input-field label {
+    color: #D32F2F;
+}
+.input-field input[type=text].valid {
+    border-bottom: 1px solid #D32F2F;
+    box-shadow: 0 1px 0 0 #D32F2F   ;
+}
+.section-title{
+    color: #D32F2F;
 }
