@@ -37,5 +37,6 @@ $('a[href*="#"]')
                 });
             }
         }
+        $(".button-collapse").sideNav('closed');
     });
 

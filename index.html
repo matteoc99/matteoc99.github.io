@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="de">
-<head>
+<head> <!-- TODO card title and change color -->
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link type="text/css" rel="stylesheet" href="css/materialize.css" media="screen,projection"/>
@@ -10,60 +10,51 @@
 
 <body>
 
-<nav>
-    <div id="top" class="nav-wrapper red darken-4">
-        <a href="#" class="brand-logo">Matteo Cosi</a>
-        <a href="#" data-activates="mobile-demo" class="button-collapse"><i class="material-icons">menu</i></a>
-        <ul class="right hide-on-med-and-down">
-            <li><a class="waves-effect waves-block" href="#about">About</a></li>
-            <li><a class="waves-effect waves-block" href="#work">My Work</a></li>
-            <li><a class="waves-effect waves-block" href="#curriculum">Curriculum</a></li>
-            <li><a class="waves-effect waves-block" href="#contact">Contact Me</a></li>
-        </ul>
-        <ul class="side-nav" id="mobile-demo">
-            <li><a href="#about">About</a></li>
-            <li><a href="#work">My Work</a></li>
-            <li><a href="#curriculum">Curriculum</a></li>
-            <li><a href="#contact">Contact Me</a></li>
-        </ul>
+<header>
+    <div class="navbar-fixed">
+        <nav role="navigation">
+            <div id="top" class="nav-wrapper  blue darken-1">
+                <a href="#" class="brand-logo">Matteo Cosi</a>
+                <a href="#" data-activates="mobile-demo" class="button-collapse"><i class="material-icons">menu</i></a>
+                <ul class="right hide-on-med-and-down">
+                    <li><a class="waves-effect waves-block" href="#about">About</a></li>
+                    <li><a class="waves-effect waves-block" href="#work">My Work</a></li>
+                    <li><a class="waves-effect waves-block" href="#curriculum">Curriculum</a></li>
+                    <li><a class="waves-effect waves-block" href="#contact">Contact Me</a></li>
+                </ul>
+
+            </div>
+        </nav>
     </div>
-</nav>
+    <ul class="side-nav" id="mobile-demo">
+        <li><a href="#about">About</a></li>
+        <li><a href="#work">My Work</a></li>
+        <li><a href="#curriculum">Curriculum</a></li>
+        <li><a href="#contact">Contact Me</a></li>
+    </ul>
+</header>
+
+
+</div>
 <div class="parallax-container valign-wrapper">
     <div class="row ">
         <div class="col 12">
-            <h3 class="white-text center-align">Hi, I am Matteo Cosi,<br>
-                Web, Desktop &amp; Android Developer</h3>
+            <h1 class="white-text center-align title">Hi, I am Matteo Cosi!<br>
+                Web, Desktop &amp; Android Developer</h1>
         </div>
     </div>
-    <div class="parallax"><img width="auto" height="1000px" src="assets/img/bgCity.jpg"></div>
+    <div class="parallax"><img width="auto" height="1000px" src="assets/img/blue.jpg"></div>
 </div>
-<a id="fab" href="#top" class="btn-floating btn-large waves-effect waves-light red darken-4"><i class="material-icons">arrow_upward</i></a>
+<a id="fab" href="#top" class="btn-floating btn-large waves-effect waves-light blue darken-1"><i class="material-icons">arrow_upward</i></a>
 
 <div class="z-depth-3" id="about">
-    <h3 class="center section-title">About Me</h3>
-    <p class="flow-text center about">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-        incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-        nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-        dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-        deserunt mollit anim id est laborum.</p>
-    <p class="flow-text center about">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-        incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-        nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-        dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-        deserunt mollit anim id est laborum.</p>
-    <p class="flow-text center about">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-        incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-        nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-        dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-        deserunt mollit anim id est laborum.</p>
-    <p class="flow-text center about">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-        incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-        nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-        dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-        deserunt mollit anim id est laborum.</p>
+    <h3 class="center blue-text darken-1">About Me</h3>
+    <p class="flow-text center about">I am 18 years old and I am currently studying computer science at the
+        Technological Institute BZ "Max Valier".
+        I was born on 21.06.1999 in Bolzano and live in St. Jakob (Laives).</p>
 </div>
 <div class="z-depth-3" id="work">
-    <h3 class="center section-title">My Work</h3>
+    <h3 class="center blue-text darken-1">My Work</h3>
     <div class="row">
         <div class="col s12 m6 xl3 ">
             <div class="card hover">
@@ -111,10 +102,11 @@
             <div class="card">
                 <div class="card-image">
                     <img class="card-img" src="assets/img/Work_In_Progress.png">
+
                 </div>
                 <div class="card-content">
                     <p class="flow-text">I developed the official website of the new upcomer under the apples: <b>Princess
-                        Katerina</b></p>
+                        Caterina</b></p>
                 </div>
                 <div class="card-action">
                     <a href="#">Learn More</a>
@@ -126,7 +118,7 @@
 </div>
 
 <div class="z-depth-3" id="curriculum">
-    <h3 class="center section-title">My Curriculum</h3>
+    <h3 class="center blue-text darken-1">My Curriculum</h3>
     <p class="flow-text center about">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
         incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
         nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
@@ -150,7 +142,7 @@
 </div>
 
 <div class="z-depth-3" id="contact">
-    <h3 class="center section-title">Contact Me</h3>
+    <h3 class="center blue-text darken-1">Contact Me</h3>
     <div class="container">
         <form class="">
             <div class="row">
@@ -170,7 +162,7 @@
                     <label for="icon_prefix2">message</label>
                 </div>
                 <div class="center input-field col s12">
-                    <button class="btn waves-effect waves-light red darken-2" type="submit" name="action">Submit
+                    <button class="btn waves-effect waves-light blue darken-1" type="submit" name="action">Submit
                         <i class="material-icons right">send</i>
                     </button>
                 </div>
@@ -180,16 +172,17 @@
 </div>
 
 
-<footer class="page-footer red">
+<footer class="page-footer blue darken-1">
     <div class="container">
         <div class="row">
             <div class="col s12 m6">
                 <h5 class="white-text">Contact Me!</h5>
                 <p class="grey-text text-lighten-4">
                     If you have any questions about me, don´t hesitate to get in touch.<br>
-                    You can write me at: <a class="footer-link" href="mailto:matteo.cosi@live.it?Subject=I want to contact you">matteo.cosi@live.it</a><br>
+                    You can write me at: <a class="footer-link"
+                                            href="mailto:matteo.cosi@live.it?Subject=I want to contact you">matteo.cosi@live.it</a><br>
                     Otherwise you can use my social account links.<br>
-                    </p>
+                </p>
             </div>
             <div class="col l4 offset-l2 s12 m6">
                 <h5 class="white-text">My Social Accounts</h5>
