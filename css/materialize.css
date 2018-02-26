@@ -140,11 +140,11 @@
 }
 
 .red.darken-2 {
-  background-color: #D32F2F !important;
+  background-color: #1e88e5 !important;
 }
 
 .red-text.text-darken-2 {
-  color: #D32F2F !important;
+  color: #1e88e5 !important;
 }
 
 .red.darken-3 {
@@ -1020,11 +1020,11 @@
 }
 
 .teal.lighten-1 {
-  background-color: #d32f2f !important;
+  background-color: #1e88e5 !important;
 }
 
 .teal-text.text-lighten-1 {
-  color: #d32f2f !important;
+  color: #1e88e5 !important;
 }
 
 .teal.darken-1 {
@@ -3081,7 +3081,7 @@ td, th {
 }
 
 .collection .collection-item.active {
-  background-color: #d32f2f;
+  background-color: #1e88e5;
   color: #eafaf9;
 }
 
@@ -3093,7 +3093,7 @@ td, th {
   display: block;
   -webkit-transition: .25s;
   transition: .25s;
-  color: #d32f2f;
+  color: #1e88e5;
 }
 
 .collection a.collection-item:not(.active):hover {
@@ -3116,7 +3116,7 @@ td, th {
 
 .secondary-content {
   float: right;
-  color: #d32f2f;
+  color: #1e88e5;
 }
 
 .collapsible .collection {
@@ -3155,13 +3155,13 @@ td, th {
   top: 0;
   left: 0;
   bottom: 0;
-  background-color: #d32f2f;
+  background-color: #1e88e5;
   -webkit-transition: width .3s linear;
   transition: width .3s linear;
 }
 
 .progress .indeterminate {
-  background-color: #d32f2f;
+  background-color: #1e88e5;
 }
 
 .progress .indeterminate:before {
@@ -3324,7 +3324,7 @@ span.badge.new {
   font-weight: 300;
   font-size: 0.8rem;
   color: #fff;
-  background-color: #d32f2f;
+  background-color: #1e88e5;
   border-radius: 2px;
 }
 
