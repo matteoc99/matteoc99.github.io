@@ -2,14 +2,26 @@ $(document).ready(function () {
     $(".button-collapse").sideNav();
     $('.parallax').parallax();
     $('.carousel.carousel-slider').carousel({fullWidth: true});
-
+    $('.modal').modal();
 });
+
+
+function sende() {
+    var subject = $("#subject").val();
+    var content = $("#content").val();
+
+
+    alert("Since my server does not support php you have to send your email with your favorite mail client.\n" +
+        "Warning: new lines are lost in some clients!");
+    location.href = "mailto:" + "matteo.cosi@live.it" + '?subject=' + subject + '&body=' + content;
+
+}
 
 $('a[href*="#"]')
 // Remove links that don't actually link to anything
     .not('[href="#"]')
     .not('[href="#0"]')
-    .click(function(event) {
+    .click(function (event) {
         // On-page links
         if (
             location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '')
@@ -25,14 +37,14 @@ $('a[href*="#"]')
                 event.preventDefault();
                 $('html, body').animate({
                     scrollTop: target.offset().top
-                }, 500, function() {
+                }, 500, function () {
                     // Callback after animation
                     // Must change focus!
                     var $target = $(target);
                     if ($target.is(":focus")) { // Checking if the target was focused
                         return false;
                     } else {
-                        $target.attr('tabindex','-1'); // Adding tabindex for elements not focusable
+                        $target.attr('tabindex', '-1'); // Adding tabindex for elements not focusable
                     }
                 });
             }
