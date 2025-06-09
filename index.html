@@ -13,20 +13,31 @@
             margin: 0;
             padding: 0;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
         }
 
         .container {
             padding: 20px;
+            width: 80%;
+            max-width: 800px;
         }
 
         h1 {
             font-size: 3em;
             margin-bottom: 20px;
             text-shadow: 0 0 2px #835e0c;
+        }
+
+        h2 {
+            font-size: 2em;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 1px #835e0c;
         }
 
         .blink {
@@ -37,12 +48,52 @@
             50% { opacity: 0; }
         }
 
+        .projects {
+            margin-top: 40px;
+            text-align: left;
+        }
+
+        .project {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #835e0c;
+            border-radius: 5px;
+        }
+
+        .project h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .project p {
+            margin-bottom: 10px;
+        }
+
+        .project a {
+            color: #835e0c;
+            text-decoration: none;
+            border-bottom: 1px solid #835e0c;
+        }
+
+        .project a:hover {
+            text-shadow: 0 0 3px #835e0c;
+        }
+
     </style>
 </head>
 <body>
 <div class="container">
     <h1>Hello World</h1>
     <p><span class="blink">_</span></p>
+
+    <div class="projects">
+        <h2>Projects</h2>
+        <div class="project">
+            <h3>GPX Viewer</h3>
+            <p>A web-based tool for viewing and analyzing GPX track files.</p>
+            <p><a href="/gpx-viewer" target="_blank">View Project</a></p>
+        </div>
+    </div>
 </div>
 
 <script>
