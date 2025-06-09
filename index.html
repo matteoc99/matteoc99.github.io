@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <style>
+        body {
+            background-color: #000000;
+            color: #835e0c;
+            font-family: "Courier New", Courier, monospace;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 2px #835e0c;
+        }
+
+        .blink {
+            animation: blink 1.5s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Hello World</h1>
+    <p><span class="blink">_</span></p>
+</div>
+
+<script>
+    // Simple typewriter effect for the oldschool feel
+    document.addEventListener('DOMContentLoaded', function() {
+        const greeting = "Welcome to My GitHub Page ";
+        const greetingElement = document.querySelector('p');
+        greetingElement.innerHTML = '<span class="blink">_</span>';
+
+        let i = 0;
+        const typeWriter = setInterval(function() {
+            if (i < greeting.length) {
+                greetingElement.innerHTML = greeting.substring(0, i+1) + '<span class="blink">_</span>';
+                i++;
+            } else {
+                clearInterval(typeWriter);
+            }
+        }, 150);
+    });
+</script>
+</body>
+</html>
