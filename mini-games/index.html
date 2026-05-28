@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mini Games</title>
     <style>
         :root {
@@ -12,6 +12,11 @@
 
         * {
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
         }
 
         body {
@@ -23,7 +28,6 @@
             padding: 0;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
             min-height: 100vh;
             overflow-x: hidden;
@@ -31,93 +35,91 @@
         }
 
         .container {
-            padding: 20px;
-            width: 90%;
-            max-width: 800px;
+            padding: 14px;
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
         }
 
         h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
+            font-size: clamp(2em, 9vw, 3em);
+            margin: 10px 0;
             text-shadow: 0 0 2px var(--amber);
         }
 
         .subtitle {
-            margin-bottom: 30px;
+            margin: 0 0 10px;
+            font-size: 0.95em;
+            min-height: 1.2em;
         }
 
-        .blink {
-            animation: blink 1.5s step-end infinite;
-        }
+        body.playing h1 { font-size: 1.4em; margin: 6px 0; }
+        body.playing .subtitle,
+        body.playing .menu-title { display: none; }
 
-        @keyframes blink {
-            50% { opacity: 0; }
-        }
+        .menu-title { font-size: 1.5em; margin: 18px 0 4px; }
+
+        .blink { animation: blink 1.5s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
 
         a.back {
             color: var(--amber);
             text-decoration: none;
             border-bottom: 1px solid var(--amber);
         }
+        a.back:hover { text-shadow: 0 0 3px var(--amber); }
 
-        a.back:hover {
-            text-shadow: 0 0 3px var(--amber);
-        }
-
-        /* Game selection menu */
+        /* ---- Game selection menu ---- */
         .menu {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 20px;
-            margin-top: 30px;
+            gap: 14px;
+            margin-top: 16px;
+            width: 100%;
         }
 
         .game-card {
-            padding: 20px;
+            padding: 16px;
             border: 1px solid var(--amber);
             border-radius: 5px;
             cursor: pointer;
-            min-width: 180px;
+            flex: 1 1 150px;
+            max-width: 220px;
             background: transparent;
             color: var(--amber);
             font-family: inherit;
-            font-size: 1em;
             transition: text-shadow 0.15s, box-shadow 0.15s;
         }
-
-        .game-card:hover {
+        .game-card:hover, .game-card:active {
             text-shadow: 0 0 3px var(--amber);
             box-shadow: 0 0 8px rgba(199, 149, 32, 0.4);
         }
-
-        .game-card h3 {
-            margin: 0 0 10px;
-            font-size: 1.4em;
-        }
-
-        .game-card p {
-            margin: 0;
-            font-size: 0.85em;
-            opacity: 0.85;
-        }
+        .game-card h3 { margin: 0 0 8px; font-size: 1.25em; }
+        .game-card p { margin: 0; font-size: 0.8em; opacity: 0.85; }
 
         .menu-divider {
             flex-basis: 100%;
             text-align: center;
             opacity: 0.7;
             letter-spacing: 2px;
-            margin: 10px 0 0;
+            margin: 8px 0 0;
         }
 
-        /* Stage */
-        .stage {
-            display: none;
-            margin-top: 20px;
-        }
+        /* ---- Game stage ---- */
+        .stage { display: none; width: 100%; flex-direction: column; align-items: center; }
+        .stage.active { display: flex; }
 
-        .stage.active {
-            display: block;
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 460px;
+            margin: 4px auto;
+            font-size: 1em;
         }
 
         canvas {
@@ -126,29 +128,65 @@
             border-radius: 5px;
             display: block;
             margin: 0 auto;
-            max-width: 100%;
+            touch-action: none;
             box-shadow: 0 0 12px rgba(131, 94, 12, 0.4);
         }
 
-        .hud {
-            display: flex;
-            justify-content: space-between;
-            max-width: 420px;
-            margin: 10px auto;
-            font-size: 1.1em;
+        .hint {
+            font-size: 0.8em;
+            opacity: 0.8;
+            margin: 6px 0;
+            min-height: 1.1em;
         }
 
-        .hint {
-            font-size: 0.85em;
-            opacity: 0.8;
-            margin-top: 10px;
-            min-height: 1.2em;
+        /* ---- Touch control pads ---- */
+        .pad-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            width: 100%;
+            padding: 6px;
+            user-select: none;
+            touch-action: none;
+        }
+        .pad-area.top { transform: rotate(180deg); }
+        .pad-area:empty { display: none; padding: 0; }
+
+        .pad-col { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+        .pad-row { display: flex; gap: 16px; }
+        .pad-group { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .pad-label { font-size: 0.75em; letter-spacing: 1px; }
+
+        .pad-btn {
+            min-width: 60px;
+            min-height: 60px;
+            font-size: 1.4em;
+            background: transparent;
+            color: var(--amber);
+            border: 1px solid var(--amber);
+            border-radius: 8px;
+            font-family: inherit;
+            cursor: pointer;
+            touch-action: none;
+            user-select: none;
+            transition: background 0.05s, box-shadow 0.05s;
+        }
+        .pad-btn.wide { min-width: 110px; }
+        .pad-btn.active {
+            background: rgba(199, 149, 32, 0.25);
+            box-shadow: 0 0 10px rgba(199, 149, 32, 0.5);
+            text-shadow: 0 0 3px var(--amber);
         }
 
         .controls {
-            margin-top: 15px;
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
-
         button.btn {
             background: transparent;
             color: var(--amber);
@@ -156,21 +194,12 @@
             border-radius: 5px;
             font-family: inherit;
             font-size: 1em;
-            padding: 8px 16px;
+            padding: 10px 18px;
             cursor: pointer;
-            margin: 4px;
-            transition: text-shadow 0.15s, box-shadow 0.15s;
         }
+        button.btn:active { background: rgba(199, 149, 32, 0.2); }
 
-        button.btn:hover {
-            text-shadow: 0 0 3px var(--amber);
-            box-shadow: 0 0 8px rgba(199, 149, 32, 0.4);
-        }
-
-        footer {
-            margin-top: 30px;
-            font-size: 0.85em;
-        }
+        footer { margin: 18px 0 8px; font-size: 0.85em; }
     </style>
 </head>
 <body>
@@ -179,44 +208,51 @@
     <p class="subtitle"><span id="tagline"></span><span class="blink">_</span></p>
 
     <!-- Menu -->
-    <div id="menu" class="menu">
-        <button class="game-card" data-game="snake">
-            <h3>Snake</h3>
-            <p>Eat, grow, don't bite yourself.<br>Arrows / WASD</p>
-        </button>
-        <button class="game-card" data-game="pong">
-            <h3>Pong</h3>
-            <p>Beat the CPU to 5 points.<br>&uarr; &darr; / W S</p>
-        </button>
-        <button class="game-card" data-game="breakout">
-            <h3>Breakout</h3>
-            <p>Smash every brick.<br>&larr; &rarr; / Mouse</p>
-        </button>
+    <div id="menu">
+        <div class="menu-title">1 Player</div>
+        <div class="menu">
+            <button class="game-card" data-game="snake">
+                <h3>Snake</h3>
+                <p>Eat, grow, don't crash.<br>Swipe or tap arrows</p>
+            </button>
+            <button class="game-card" data-game="pong">
+                <h3>Pong</h3>
+                <p>Beat the CPU to 5.<br>Slide your paddle</p>
+            </button>
+            <button class="game-card" data-game="breakout">
+                <h3>Breakout</h3>
+                <p>Smash every brick.<br>Slide to move</p>
+            </button>
+        </div>
 
-        <div class="menu-divider">- 2 Players -</div>
-
-        <button class="game-card" data-game="tron">
-            <h3>Tron</h3>
-            <p>Light cycles. Don't crash.<br>P1: WASD &nbsp; P2: Arrows</p>
-        </button>
-        <button class="game-card" data-game="pong2p">
-            <h3>Pong 2P</h3>
-            <p>Duel to 5 points.<br>P1: W S &nbsp; P2: &uarr; &darr;</p>
-        </button>
-        <button class="game-card" data-game="tanks">
-            <h3>Tank Battle</h3>
-            <p>Shoot first, win. First to 5.<br>P1: WASD+Space &nbsp; P2: Arrows+Enter</p>
-        </button>
+        <div class="menu-title">Multiplayer · one device</div>
+        <div class="menu">
+            <button class="game-card" data-game="tron">
+                <h3>Tron</h3>
+                <p>Light cycles, 2&ndash;4 players.<br>Tap to turn L / R</p>
+            </button>
+            <button class="game-card" data-game="pong2p">
+                <h3>Pong 2P</h3>
+                <p>Duel to 5 points.<br>Slide your paddle</p>
+            </button>
+            <button class="game-card" data-game="tanks">
+                <h3>Tank Battle</h3>
+                <p>Shoot first, win.<br>Turn · Thrust · Fire</p>
+            </button>
+        </div>
+        <p class="hint">2-player games: sit at opposite ends &mdash; Player 2's pad is flipped to face you.</p>
     </div>
 
     <!-- Game stage -->
     <div id="stage" class="stage">
+        <div id="padTop" class="pad-area top"></div>
         <div class="hud">
             <span id="hudLeft">SCORE: 0</span>
             <span id="hudRight">BEST: 0</span>
         </div>
-        <canvas id="canvas" width="420" height="420"></canvas>
+        <canvas id="canvas" width="360" height="360"></canvas>
         <div id="hint" class="hint"></div>
+        <div id="padBottom" class="pad-area"></div>
         <div class="controls">
             <button class="btn" id="restartBtn">Restart</button>
             <button class="btn" id="menuBtn">&larr; Menu</button>
@@ -229,17 +265,14 @@
 </div>
 
 <script>
-    // ---- Typewriter tagline (matches the home page vibe) ----
+    // ---- Typewriter tagline ----
     (function () {
         const text = "Insert coin. Pick a game. ";
         const el = document.getElementById('tagline');
         let i = 0;
         const t = setInterval(function () {
-            if (i < text.length) {
-                el.textContent = text.substring(0, ++i);
-            } else {
-                clearInterval(t);
-            }
+            if (i < text.length) el.textContent = text.substring(0, ++i);
+            else clearInterval(t);
         }, 90);
     })();
 
@@ -248,22 +281,87 @@
 
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    const menu = document.getElementById('menu');
+    const menuEl = document.getElementById('menu');
     const stage = document.getElementById('stage');
     const hudLeft = document.getElementById('hudLeft');
     const hudRight = document.getElementById('hudRight');
     const hint = document.getElementById('hint');
+    const padTop = document.getElementById('padTop');
+    const padBottom = document.getElementById('padBottom');
     const restartBtn = document.getElementById('restartBtn');
     const menuBtn = document.getElementById('menuBtn');
 
-    let currentGame = null;     // active game object with stop()
-    let currentFactory = null;  // factory to rebuild on restart
+    let currentGame = null;
+    let currentFactory = null;
 
-    function bestKey(name) { return 'minigames-best-' + name; }
-    function getBest(name) { return parseInt(localStorage.getItem(bestKey(name)) || '0', 10); }
-    function setBest(name, v) {
-        if (v > getBest(name)) localStorage.setItem(bestKey(name), String(v));
+    // ---- Persistence ----
+    function bestKey(n) { return 'minigames-best-' + n; }
+    function getBest(n) { return parseInt(localStorage.getItem(bestKey(n)) || '0', 10); }
+    function setBest(n, v) { if (v > getBest(n)) localStorage.setItem(bestKey(n), String(v)); }
+
+    // ---- Responsive canvas sizing ----
+    function setCanvasSize(w, h) {
+        canvas.width = w;
+        canvas.height = h;
+        fitCanvas();
     }
+    function fitCanvas() {
+        const aspect = canvas.width / canvas.height;
+        const maxW = Math.min(window.innerWidth - 24, 460);
+        const twoPlayer = padTop.children.length > 0;
+        const maxH = window.innerHeight * (twoPlayer ? 0.42 : 0.55);
+        let w = maxW, h = w / aspect;
+        if (h > maxH) { h = maxH; w = h * aspect; }
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+    }
+    window.addEventListener('resize', fitCanvas);
+
+    // Map a pointer/touch position to canvas coordinates
+    function canvasPos(clientX, clientY) {
+        const r = canvas.getBoundingClientRect();
+        return {
+            x: (clientX - r.left) * (canvas.width / r.width),
+            y: (clientY - r.top) * (canvas.height / r.height)
+        };
+    }
+
+    // ---- Touch button factory ----
+    function makeBtn(label, opts) {
+        opts = opts || {};
+        const b = document.createElement('button');
+        b.className = 'pad-btn' + (opts.className ? ' ' + opts.className : '');
+        b.innerHTML = label;
+        let pressed = false;
+        function down(e) {
+            e.preventDefault();
+            if (pressed) return;
+            pressed = true;
+            b.classList.add('active');
+            if (opts.onPress) opts.onPress();
+        }
+        function up(e) {
+            if (e) e.preventDefault();
+            if (!pressed) return;
+            pressed = false;
+            b.classList.remove('active');
+            if (opts.onRelease) opts.onRelease();
+        }
+        b.addEventListener('touchstart', down, { passive: false });
+        b.addEventListener('touchend', up);
+        b.addEventListener('touchcancel', up);
+        b.addEventListener('mousedown', down);
+        b.addEventListener('mouseup', up);
+        b.addEventListener('mouseleave', up);
+        return b;
+    }
+    function padGroup() {
+        const d = document.createElement('div');
+        d.className = 'pad-row';
+        return d;
+    }
+
+    function clearPads() { padTop.innerHTML = ''; padBottom.innerHTML = ''; }
 
     function stopCurrent() {
         if (currentGame && currentGame.stop) currentGame.stop();
@@ -272,23 +370,26 @@
 
     function showMenu() {
         stopCurrent();
+        clearPads();
+        document.body.classList.remove('playing');
         stage.classList.remove('active');
-        stage.style.display = 'none';
-        menu.style.display = 'flex';
+        menuEl.style.display = 'block';
     }
 
     function launch(factory) {
         currentFactory = factory;
-        menu.style.display = 'none';
-        stage.style.display = 'block';
+        menuEl.style.display = 'none';
+        document.body.classList.add('playing');
         stage.classList.add('active');
         startCurrent();
     }
 
     function startCurrent() {
         stopCurrent();
+        clearPads();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         currentGame = currentFactory();
+        fitCanvas();
     }
 
     restartBtn.addEventListener('click', startCurrent);
@@ -296,21 +397,19 @@
 
     document.querySelectorAll('.game-card').forEach(function (card) {
         card.addEventListener('click', function () {
-            const g = card.getAttribute('data-game');
-            launch(GAMES[g]);
+            launch(GAMES[card.getAttribute('data-game')]);
         });
     });
 
-    // Centered text helper
-    function centerText(lines, opts) {
-        opts = opts || {};
-        ctx.fillStyle = opts.color || AMBER_BRIGHT;
+    function centerText(lines) {
+        ctx.fillStyle = AMBER_BRIGHT;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        const fs = opts.size || 22;
+        const fs = Math.max(16, canvas.width * 0.06);
         const startY = canvas.height / 2 - ((lines.length - 1) * (fs + 8)) / 2;
         lines.forEach(function (line, idx) {
-            ctx.font = (idx === 0 ? 'bold ' : '') + (idx === 0 ? fs : Math.round(fs * 0.7)) + 'px "Courier New", monospace';
+            const size = idx === 0 ? fs : Math.round(fs * 0.7);
+            ctx.font = (idx === 0 ? 'bold ' : '') + size + 'px "Courier New", monospace';
             ctx.fillText(line, canvas.width / 2, startY + idx * (fs + 8));
         });
         ctx.textAlign = 'start';
@@ -318,40 +417,34 @@
     }
 
     // =====================================================================
-    //  SNAKE
+    //  SNAKE  (swipe on board or tap d-pad)
     // =====================================================================
     function createSnake() {
-        const grid = 21;                       // cells per row/col
-        const cell = canvas.width / grid;      // 20px
+        setCanvasSize(360, 360);
+        const grid = 20, cell = canvas.width / grid;
         const name = 'snake';
         let snake, dir, nextDir, food, score, dead, started, timer;
 
-        hint.textContent = 'Use arrows or WASD. Press any direction to start.';
+        hint.textContent = 'Swipe the board or tap the arrows.';
         hudRight.textContent = 'BEST: ' + getBest(name);
 
         function reset() {
             snake = [{ x: 10, y: 10 }];
             dir = { x: 0, y: 0 };
             nextDir = { x: 0, y: 0 };
-            score = 0;
-            dead = false;
-            started = false;
+            score = 0; dead = false; started = false;
             placeFood();
             hudLeft.textContent = 'SCORE: 0';
             draw();
         }
-
         function placeFood() {
-            do {
-                food = { x: (Math.random() * grid) | 0, y: (Math.random() * grid) | 0 };
-            } while (snake.some(s => s.x === food.x && s.y === food.y));
+            do { food = { x: (Math.random() * grid) | 0, y: (Math.random() * grid) | 0 }; }
+            while (snake.some(s => s.x === food.x && s.y === food.y));
         }
-
         function step() {
             if (dead || !started) return;
             dir = nextDir;
             const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
-
             if (head.x < 0 || head.y < 0 || head.x >= grid || head.y >= grid ||
                 snake.some(s => s.x === head.x && s.y === head.y)) {
                 dead = true;
@@ -360,794 +453,550 @@
                 draw();
                 return;
             }
-
             snake.unshift(head);
             if (head.x === food.x && head.y === food.y) {
-                score++;
-                hudLeft.textContent = 'SCORE: ' + score;
-                placeFood();
-            } else {
-                snake.pop();
-            }
+                score++; hudLeft.textContent = 'SCORE: ' + score; placeFood();
+            } else snake.pop();
             draw();
         }
-
         function draw() {
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // food
             ctx.fillStyle = AMBER_BRIGHT;
             ctx.fillRect(food.x * cell + 2, food.y * cell + 2, cell - 4, cell - 4);
-
-            // snake
             snake.forEach(function (s, i) {
                 ctx.fillStyle = i === 0 ? AMBER_BRIGHT : AMBER;
                 ctx.fillRect(s.x * cell + 1, s.y * cell + 1, cell - 2, cell - 2);
             });
-
             if (dead) {
-                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.fillStyle = 'rgba(0,0,0,0.72)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 centerText(['GAME OVER', 'Score: ' + score, 'Press Restart']);
             }
         }
-
-        function onKey(e) {
-            const k = e.key.toLowerCase();
-            let nd = null;
-            if (k === 'arrowup' || k === 'w') nd = { x: 0, y: -1 };
-            else if (k === 'arrowdown' || k === 's') nd = { x: 0, y: 1 };
-            else if (k === 'arrowleft' || k === 'a') nd = { x: -1, y: 0 };
-            else if (k === 'arrowright' || k === 'd') nd = { x: 1, y: 0 };
-            if (!nd) return;
-            e.preventDefault();
-            // prevent reversing directly
-            if (snake.length > 1 && nd.x === -dir.x && nd.y === -dir.y) return;
-            nextDir = nd;
+        function turn(x, y) {
+            if (snake.length > 1 && x === -dir.x && y === -dir.y) return;
+            nextDir = { x: x, y: y };
             if (!started) { started = true; hint.textContent = ''; }
         }
 
-        window.addEventListener('keydown', onKey);
+        // d-pad
+        const top = padGroup(), mid = padGroup(), bot = padGroup();
+        const col = document.createElement('div'); col.className = 'pad-col';
+        top.appendChild(makeBtn('&uarr;', { onPress: () => turn(0, -1) }));
+        mid.appendChild(makeBtn('&larr;', { onPress: () => turn(-1, 0) }));
+        mid.appendChild(makeBtn('&darr;', { onPress: () => turn(0, 1) }));
+        mid.appendChild(makeBtn('&rarr;', { onPress: () => turn(1, 0) }));
+        col.appendChild(top); col.appendChild(mid);
+        padBottom.appendChild(col);
+
+        // swipe
+        let sx = 0, sy = 0;
+        function ts(e) { const t = e.touches ? e.touches[0] : e; sx = t.clientX; sy = t.clientY; }
+        function te(e) {
+            const t = e.changedTouches ? e.changedTouches[0] : e;
+            const dx = t.clientX - sx, dy = t.clientY - sy;
+            if (Math.abs(dx) < 18 && Math.abs(dy) < 18) return;
+            if (Math.abs(dx) > Math.abs(dy)) turn(dx > 0 ? 1 : -1, 0);
+            else turn(0, dy > 0 ? 1 : -1);
+        }
+        canvas.addEventListener('touchstart', ts, { passive: true });
+        canvas.addEventListener('touchend', te);
+
         reset();
         timer = setInterval(step, 110);
-
         return {
             stop: function () {
                 clearInterval(timer);
-                window.removeEventListener('keydown', onKey);
+                canvas.removeEventListener('touchstart', ts);
+                canvas.removeEventListener('touchend', te);
             }
         };
     }
 
-    // =====================================================================
-    //  PONG
-    // =====================================================================
-    function createPong() {
-        const name = 'pong';
-        const W = canvas.width, H = canvas.height;
-        const pw = 10, ph = 70;
-        const player = { x: 14, y: H / 2 - ph / 2, score: 0 };
-        const cpu = { x: W - 14 - pw, y: H / 2 - ph / 2, score: 0 };
+    // ---- shared vertical-pong helper used by 1P & 2P ----
+    function verticalPong(opts) {
+        // opts.cpu === true  => top paddle is AI
+        const W = 360, H = 520;
+        setCanvasSize(W, H);
+        const pw = 78, ph = 12;
+        const bottom = { x: W / 2 - pw / 2, score: 0, dir: 0 };
+        const top = { x: W / 2 - pw / 2, score: 0, dir: 0 };
+        const bottomY = H - 22, topY = 10;
         const ball = {};
-        let upPressed = false, downPressed = false;
         let raf, over = false, winner = '';
 
-        hint.textContent = 'Arrows or W/S to move. First to 5 wins.';
-        hudRight.textContent = 'CPU: 0';
-
         function resetBall(dir) {
-            ball.x = W / 2; ball.y = H / 2; ball.r = 6;
-            const angle = (Math.random() * 0.6 - 0.3);
-            const speed = 4.2;
-            ball.vx = dir * speed * Math.cos(angle);
-            ball.vy = speed * Math.sin(angle);
+            ball.x = W / 2; ball.y = H / 2; ball.r = 7;
+            const a = Math.random() * 0.6 - 0.3, sp = 4.4;
+            ball.vx = sp * Math.sin(a);
+            ball.vy = dir * sp * Math.cos(a);
         }
-
         function updateHud() {
-            hudLeft.textContent = 'YOU: ' + player.score;
-            hudRight.textContent = 'CPU: ' + cpu.score;
+            hudLeft.textContent = 'P1: ' + bottom.score;
+            hudRight.textContent = (opts.cpu ? 'CPU: ' : 'P2: ') + top.score;
         }
-
+        function bounce(p) {
+            ball.vy *= -1.05;
+            ball.vx += ((ball.x - (p.x + pw / 2)) / (pw / 2)) * 2;
+        }
         function loop() {
             if (over) return;
-            // player movement
-            const pspeed = 6;
-            if (upPressed) player.y -= pspeed;
-            if (downPressed) player.y += pspeed;
-            player.y = Math.max(0, Math.min(H - ph, player.y));
-
-            // simple CPU AI (tracks ball with capped speed)
-            const target = ball.y - ph / 2;
-            const cspeed = 4.3;
-            if (cpu.y + 2 < target) cpu.y += cspeed;
-            else if (cpu.y - 2 > target) cpu.y -= cspeed;
-            cpu.y = Math.max(0, Math.min(H - ph, cpu.y));
-
-            // ball
-            ball.x += ball.vx;
-            ball.y += ball.vy;
-            if (ball.y - ball.r < 0 || ball.y + ball.r > H) {
-                ball.vy *= -1;
-                ball.y = Math.max(ball.r, Math.min(H - ball.r, ball.y));
+            const sp = 6;
+            bottom.x = clamp(bottom.x + bottom.dir * sp);
+            if (opts.cpu) {
+                const target = ball.x - pw / 2, cs = 4.2;
+                if (top.x + 2 < target) top.x += cs; else if (top.x - 2 > target) top.x -= cs;
+                top.x = clamp(top.x);
+            } else {
+                top.x = clamp(top.x + top.dir * sp);
             }
 
-            // paddle collisions
-            if (ball.x - ball.r < player.x + pw && ball.x > player.x &&
-                ball.y > player.y && ball.y < player.y + ph && ball.vx < 0) {
-                ball.vx *= -1.06;
-                ball.vy += ((ball.y - (player.y + ph / 2)) / (ph / 2)) * 2;
-                ball.x = player.x + pw + ball.r;
+            ball.x += ball.vx; ball.y += ball.vy;
+            if (ball.x - ball.r < 0 || ball.x + ball.r > W) {
+                ball.vx *= -1; ball.x = Math.max(ball.r, Math.min(W - ball.r, ball.x));
             }
-            if (ball.x + ball.r > cpu.x && ball.x < cpu.x + pw &&
-                ball.y > cpu.y && ball.y < cpu.y + ph && ball.vx > 0) {
-                ball.vx *= -1.06;
-                ball.vy += ((ball.y - (cpu.y + ph / 2)) / (ph / 2)) * 2;
-                ball.x = cpu.x - ball.r;
+            if (ball.y - ball.r < topY + ph && ball.x > top.x && ball.x < top.x + pw && ball.vy < 0) {
+                bounce(top); ball.y = topY + ph + ball.r;
             }
-
-            // scoring
-            if (ball.x < 0) { cpu.score++; updateHud(); checkWin(); resetBall(1); }
-            else if (ball.x > W) { player.score++; updateHud(); checkWin(); resetBall(-1); }
+            if (ball.y + ball.r > bottomY && ball.x > bottom.x && ball.x < bottom.x + pw && ball.vy > 0) {
+                bounce(bottom); ball.y = bottomY - ball.r;
+            }
+            if (ball.y < 0) { bottom.score++; updateHud(); win(); resetBall(1); }
+            else if (ball.y > H) { top.score++; updateHud(); win(); resetBall(-1); }
 
             draw();
             raf = requestAnimationFrame(loop);
         }
-
-        function checkWin() {
-            if (player.score >= 5) { over = true; winner = 'YOU WIN!'; }
-            else if (cpu.score >= 5) { over = true; winner = 'CPU WINS'; }
+        function clamp(x) { return Math.max(0, Math.min(W - pw, x)); }
+        function win() {
+            if (bottom.score >= 5) { over = true; winner = 'PLAYER 1 WINS'; }
+            else if (top.score >= 5) { over = true; winner = opts.cpu ? 'CPU WINS' : 'PLAYER 2 WINS'; }
             if (over) draw();
         }
-
         function draw() {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, W, H);
-
-            // center dashed line
-            ctx.strokeStyle = AMBER;
-            ctx.setLineDash([8, 12]);
-            ctx.beginPath();
-            ctx.moveTo(W / 2, 0);
-            ctx.lineTo(W / 2, H);
-            ctx.stroke();
+            ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+            ctx.strokeStyle = AMBER; ctx.setLineDash([8, 12]);
+            ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
             ctx.setLineDash([]);
-
-            ctx.fillStyle = AMBER_BRIGHT;
-            ctx.fillRect(player.x, player.y, pw, ph);
-            ctx.fillRect(cpu.x, cpu.y, pw, ph);
-
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
-            ctx.fill();
-
+            ctx.fillStyle = AMBER_BRIGHT; ctx.fillRect(bottom.x, bottomY, pw, ph);
+            ctx.fillStyle = opts.cpu ? AMBER : AMBER_BRIGHT; ctx.fillRect(top.x, topY, pw, ph);
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2); ctx.fill();
             if (over) {
-                ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                ctx.fillRect(0, 0, W, H);
+                ctx.fillStyle = 'rgba(0,0,0,0.72)'; ctx.fillRect(0, 0, W, H);
                 centerText([winner, 'Press Restart']);
             }
         }
 
-        function onKeyDown(e) {
-            const k = e.key.toLowerCase();
-            if (k === 'arrowup' || k === 'w') { upPressed = true; e.preventDefault(); }
-            if (k === 'arrowdown' || k === 's') { downPressed = true; e.preventDefault(); }
-        }
-        function onKeyUp(e) {
-            const k = e.key.toLowerCase();
-            if (k === 'arrowup' || k === 'w') upPressed = false;
-            if (k === 'arrowdown' || k === 's') downPressed = false;
+        hint.textContent = opts.cpu
+            ? 'Slide the board or use the buttons. First to 5.'
+            : 'Each player slides their own paddle. First to 5.';
+
+        // bottom player controls
+        const rowB = padGroup();
+        rowB.appendChild(makeBtn('&larr;', { onPress: () => bottom.dir = -1, onRelease: () => { if (bottom.dir < 0) bottom.dir = 0; } }));
+        rowB.appendChild(makeBtn('&rarr;', { onPress: () => bottom.dir = 1, onRelease: () => { if (bottom.dir > 0) bottom.dir = 0; } }));
+        padBottom.appendChild(rowB);
+
+        if (!opts.cpu) {
+            const rowT = padGroup();
+            rowT.appendChild(makeBtn('&larr;', { onPress: () => top.dir = -1, onRelease: () => { if (top.dir < 0) top.dir = 0; } }));
+            rowT.appendChild(makeBtn('&rarr;', { onPress: () => top.dir = 1, onRelease: () => { if (top.dir > 0) top.dir = 0; } }));
+            padTop.appendChild(rowT);
         }
 
-        window.addEventListener('keydown', onKeyDown);
-        window.addEventListener('keyup', onKeyUp);
+        // drag controls the bottom (human) paddle on either game
+        function drag(e) {
+            const t = e.touches ? e.touches[0] : e;
+            const p = canvasPos(t.clientX, t.clientY);
+            if (p.y > H / 2) bottom.x = clamp(p.x - pw / 2);
+            else if (!opts.cpu) top.x = clamp(p.x - pw / 2);
+        }
+        function dstart(e) { e.preventDefault(); drag(e); }
+        canvas.addEventListener('touchstart', dstart, { passive: false });
+        canvas.addEventListener('touchmove', drag, { passive: false });
+
         updateHud();
         resetBall(Math.random() < 0.5 ? 1 : -1);
         raf = requestAnimationFrame(loop);
-
         return {
             stop: function () {
-                over = true;
-                cancelAnimationFrame(raf);
-                window.removeEventListener('keydown', onKeyDown);
-                window.removeEventListener('keyup', onKeyUp);
+                over = true; cancelAnimationFrame(raf);
+                canvas.removeEventListener('touchstart', dstart);
+                canvas.removeEventListener('touchmove', drag);
             }
         };
     }
+    function createPong() { return verticalPong({ cpu: true }); }
+    function createPong2P() { return verticalPong({ cpu: false }); }
 
     // =====================================================================
     //  BREAKOUT
     // =====================================================================
     function createBreakout() {
+        const W = 360, H = 480;
+        setCanvasSize(W, H);
         const name = 'breakout';
-        const W = canvas.width, H = canvas.height;
         const cols = 7, rows = 5;
         const brickW = (W - 20) / cols, brickH = 18, brickTop = 40, gap = 4;
-        let bricks, paddle, ball, score, lives, raf, state; // state: play|over|win
-        let leftPressed = false, rightPressed = false;
+        let bricks, paddle, ball, score, lives, raf, state, dir = 0;
 
-        hint.textContent = 'Arrows or mouse to move the paddle.';
+        hint.textContent = 'Slide the board or use the buttons.';
         hudRight.textContent = 'BEST: ' + getBest(name);
 
         function reset() {
             bricks = [];
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    bricks.push({ c: c, r: r, alive: true });
-                }
-            }
-            paddle = { w: 80, h: 12, x: W / 2 - 40, y: H - 24 };
-            resetBall();
-            score = 0;
-            lives = 3;
-            state = 'play';
+            for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) bricks.push({ c, r, alive: true });
+            paddle = { w: 80, h: 12, x: W / 2 - 40, y: H - 26 };
+            resetBall(); score = 0; lives = 3; state = 'play';
             updateHud();
         }
-
-        function resetBall() {
-            ball = { x: W / 2, y: H - 40, r: 6, vx: 3, vy: -3.4 };
-        }
-
-        function updateHud() {
-            hudLeft.textContent = 'SCORE: ' + score + '  LIVES: ' + lives;
-        }
+        function resetBall() { ball = { x: W / 2, y: H - 44, r: 6, vx: 3, vy: -3.4 }; }
+        function updateHud() { hudLeft.textContent = 'SCORE: ' + score + '  LIVES: ' + lives; }
+        function clampP(x) { return Math.max(0, Math.min(W - paddle.w, x)); }
 
         function loop() {
             if (state !== 'play') return;
-
-            const pspeed = 7;
-            if (leftPressed) paddle.x -= pspeed;
-            if (rightPressed) paddle.x += pspeed;
-            paddle.x = Math.max(0, Math.min(W - paddle.w, paddle.x));
-
-            ball.x += ball.vx;
-            ball.y += ball.vy;
-
+            paddle.x = clampP(paddle.x + dir * 7);
+            ball.x += ball.vx; ball.y += ball.vy;
             if (ball.x - ball.r < 0) { ball.x = ball.r; ball.vx *= -1; }
             if (ball.x + ball.r > W) { ball.x = W - ball.r; ball.vx *= -1; }
             if (ball.y - ball.r < 0) { ball.y = ball.r; ball.vy *= -1; }
-
-            // paddle hit
             if (ball.y + ball.r >= paddle.y && ball.y + ball.r <= paddle.y + paddle.h + 6 &&
                 ball.x >= paddle.x && ball.x <= paddle.x + paddle.w && ball.vy > 0) {
                 ball.vy *= -1;
-                const hit = (ball.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2);
-                ball.vx = hit * 4.5;
+                ball.vx = ((ball.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2)) * 4.5;
                 ball.y = paddle.y - ball.r;
             }
-
-            // fell out
             if (ball.y - ball.r > H) {
-                lives--;
-                updateHud();
+                lives--; updateHud();
                 if (lives <= 0) {
-                    state = 'over';
-                    setBest(name, score);
-                    hudRight.textContent = 'BEST: ' + getBest(name);
-                    draw();
-                    return;
+                    state = 'over'; setBest(name, score);
+                    hudRight.textContent = 'BEST: ' + getBest(name); draw(); return;
                 }
                 resetBall();
             }
-
-            // brick collisions
             for (const b of bricks) {
                 if (!b.alive) continue;
-                const bx = 10 + b.c * brickW;
-                const by = brickTop + b.r * (brickH + gap);
+                const bx = 10 + b.c * brickW, by = brickTop + b.r * (brickH + gap);
                 if (ball.x + ball.r > bx + gap / 2 && ball.x - ball.r < bx + brickW - gap / 2 &&
                     ball.y + ball.r > by && ball.y - ball.r < by + brickH) {
-                    b.alive = false;
-                    ball.vy *= -1;
-                    score += 10;
-                    updateHud();
-                    break;
+                    b.alive = false; ball.vy *= -1; score += 10; updateHud(); break;
                 }
             }
-
             if (bricks.every(b => !b.alive)) {
-                state = 'win';
-                setBest(name, score);
-                hudRight.textContent = 'BEST: ' + getBest(name);
-                draw();
-                return;
+                state = 'win'; setBest(name, score);
+                hudRight.textContent = 'BEST: ' + getBest(name); draw(); return;
             }
-
             draw();
             raf = requestAnimationFrame(loop);
         }
-
         function draw() {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, W, H);
-
+            ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
             for (const b of bricks) {
                 if (!b.alive) continue;
-                const bx = 10 + b.c * brickW;
-                const by = brickTop + b.r * (brickH + gap);
+                const bx = 10 + b.c * brickW, by = brickTop + b.r * (brickH + gap);
                 ctx.fillStyle = b.r % 2 === 0 ? AMBER_BRIGHT : AMBER;
                 ctx.fillRect(bx + gap / 2, by, brickW - gap, brickH);
             }
-
-            ctx.fillStyle = AMBER_BRIGHT;
-            ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
-
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
-            ctx.fill();
-
+            ctx.fillStyle = AMBER_BRIGHT; ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2); ctx.fill();
             if (state === 'over' || state === 'win') {
-                ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                ctx.fillRect(0, 0, W, H);
-                centerText([state === 'win' ? 'YOU WIN!' : 'GAME OVER',
-                            'Score: ' + score, 'Press Restart']);
+                ctx.fillStyle = 'rgba(0,0,0,0.72)'; ctx.fillRect(0, 0, W, H);
+                centerText([state === 'win' ? 'YOU WIN!' : 'GAME OVER', 'Score: ' + score, 'Press Restart']);
             }
         }
 
-        function onKeyDown(e) {
-            const k = e.key.toLowerCase();
-            if (k === 'arrowleft' || k === 'a') { leftPressed = true; e.preventDefault(); }
-            if (k === 'arrowright' || k === 'd') { rightPressed = true; e.preventDefault(); }
-        }
-        function onKeyUp(e) {
-            const k = e.key.toLowerCase();
-            if (k === 'arrowleft' || k === 'a') leftPressed = false;
-            if (k === 'arrowright' || k === 'd') rightPressed = false;
-        }
-        function onMouse(e) {
-            const rect = canvas.getBoundingClientRect();
-            const scale = W / rect.width;
-            const mx = (e.clientX - rect.left) * scale;
-            paddle.x = Math.max(0, Math.min(W - paddle.w, mx - paddle.w / 2));
-        }
+        const row = padGroup();
+        row.appendChild(makeBtn('&larr;', { onPress: () => dir = -1, onRelease: () => { if (dir < 0) dir = 0; } }));
+        row.appendChild(makeBtn('&rarr;', { onPress: () => dir = 1, onRelease: () => { if (dir > 0) dir = 0; } }));
+        padBottom.appendChild(row);
 
-        window.addEventListener('keydown', onKeyDown);
-        window.addEventListener('keyup', onKeyUp);
-        canvas.addEventListener('mousemove', onMouse);
+        function drag(e) {
+            const t = e.touches ? e.touches[0] : e;
+            const p = canvasPos(t.clientX, t.clientY);
+            paddle.x = clampP(p.x - paddle.w / 2);
+        }
+        function dstart(e) { e.preventDefault(); drag(e); }
+        canvas.addEventListener('touchstart', dstart, { passive: false });
+        canvas.addEventListener('touchmove', drag, { passive: false });
+
         reset();
         raf = requestAnimationFrame(loop);
-
         return {
             stop: function () {
-                state = 'over';
-                cancelAnimationFrame(raf);
-                window.removeEventListener('keydown', onKeyDown);
-                window.removeEventListener('keyup', onKeyUp);
-                canvas.removeEventListener('mousemove', onMouse);
+                state = 'over'; cancelAnimationFrame(raf);
+                canvas.removeEventListener('touchstart', dstart);
+                canvas.removeEventListener('touchmove', drag);
             }
         };
     }
 
     // =====================================================================
-    //  TRON  (local 2-player light cycles)
+    //  TRON  (2-4 players, tap to turn left/right relative to heading)
     // =====================================================================
     function createTron() {
-        const W = canvas.width, H = canvas.height;
-        const cell = 6;
-        const cols = Math.floor(W / cell), rows = Math.floor(H / cell);
-        let occupied, p1, p2, timer, over, started, winner;
+        const W = 360, H = 360;
+        setCanvasSize(W, H);
+        const cell = 6, cols = W / cell, rows = H / cell;
+        // warm arcade palette, one per player
+        const COLORS = ['#c79520', '#f2d65a', '#d2691e', '#ff9e3d'];
+        // start pose for each player slot: position + heading
+        const STARTS = [
+            { x: 0.5, y: 0.82, dx: 0, dy: -1 },  // P1 bottom, heading up
+            { x: 0.5, y: 0.18, dx: 0, dy: 1 },   // P2 top, heading down
+            { x: 0.18, y: 0.5, dx: 1, dy: 0 },   // P3 left, heading right
+            { x: 0.82, y: 0.5, dx: -1, dy: 0 }   // P4 right, heading left
+        ];
 
-        hint.textContent = 'P1 (amber): WASD  |  P2 (bright): Arrows. Press to start.';
-
-        function reset() {
-            occupied = new Array(cols * rows).fill(0);
-            p1 = { x: Math.floor(cols * 0.25), y: Math.floor(rows / 2), dx: 1, dy: 0, alive: true, score: p1 ? p1.score : 0, color: AMBER };
-            p2 = { x: Math.floor(cols * 0.75), y: Math.floor(rows / 2), dx: -1, dy: 0, alive: true, score: p2 ? p2.score : 0, color: AMBER_BRIGHT };
-            over = false;
-            started = false;
-            winner = '';
-            mark(p1); mark(p2);
-            updateHud();
-            draw();
-        }
+        let occupied, players, timer, over, started, winner, count = 0;
 
         function idx(x, y) { return y * cols + x; }
         function mark(p) { occupied[idx(p.x, p.y)] = p; }
+        function steer(p, left) {
+            if (!p.alive) return;
+            const dx = p.dx, dy = p.dy;
+            if (left) { p.dx = dy; p.dy = -dx; } else { p.dx = -dy; p.dy = dx; }
+            if (!started) { started = true; hint.textContent = ''; }
+        }
+        function hits(n) {
+            if (n.x < 0 || n.y < 0 || n.x >= cols || n.y >= rows) return true;
+            return occupied[idx(n.x, n.y)] !== 0;
+        }
+        function aliveCount() { return players.filter(p => p.alive).length; }
+
+        function start(n) {
+            count = n;
+            clearPads();
+            occupied = new Array(cols * rows).fill(0);
+            players = [];
+            for (let i = 0; i < n; i++) {
+                const s = STARTS[i];
+                const p = {
+                    id: i + 1, color: COLORS[i], alive: true,
+                    x: (cols * s.x) | 0, y: (rows * s.y) | 0, dx: s.dx, dy: s.dy
+                };
+                players.push(p);
+                mark(p);
+            }
+            over = false; started = false; winner = '';
+            updateHud();
+            buildControls();
+            hint.textContent = 'Tap L / R to steer. Last cycle alive wins.';
+            draw();
+            timer = setInterval(step, 70);
+        }
 
         function updateHud() {
-            hudLeft.textContent = 'P1: ' + p1.score;
-            hudRight.textContent = 'P2: ' + p2.score;
+            hudLeft.textContent = count + ' PLAYERS';
+            hudRight.textContent = 'ALIVE: ' + (players ? aliveCount() : count);
         }
 
         function step() {
             if (over || !started) return;
-
-            const n1 = { x: p1.x + p1.dx, y: p1.y + p1.dy };
-            const n2 = { x: p2.x + p2.dx, y: p2.y + p2.dy };
-
-            const c1 = collides(n1);
-            const c2 = collides(n2);
-            const headOn = n1.x === n2.x && n1.y === n2.y;
-
-            if (c1 || c2 || headOn) {
-                p1.alive = !(c1 || headOn);
-                p2.alive = !(c2 || headOn);
-                endRound();
-                return;
-            }
-
-            p1.x = n1.x; p1.y = n1.y; mark(p1);
-            p2.x = n2.x; p2.y = n2.y; mark(p2);
-            draw();
-        }
-
-        function collides(n) {
-            if (n.x < 0 || n.y < 0 || n.x >= cols || n.y >= rows) return true;
-            return occupied[idx(n.x, n.y)] !== 0;
-        }
-
-        function endRound() {
-            over = true;
-            if (p1.alive && !p2.alive) { winner = 'PLAYER 1 WINS'; p1.score++; }
-            else if (p2.alive && !p1.alive) { winner = 'PLAYER 2 WINS'; p2.score++; }
-            else { winner = 'DRAW'; }
+            const alive = players.filter(p => p.alive);
+            const moves = alive.map(p => ({ p, n: { x: p.x + p.dx, y: p.y + p.dy } }));
+            // mark deaths: wall/trail hit, or two heads to the same cell
+            moves.forEach(m => { m.dead = hits(m.n); });
+            for (let i = 0; i < moves.length; i++)
+                for (let j = i + 1; j < moves.length; j++)
+                    if (moves[i].n.x === moves[j].n.x && moves[i].n.y === moves[j].n.y) {
+                        moves[i].dead = moves[j].dead = true;
+                    }
+            moves.forEach(m => {
+                if (m.dead) { m.p.alive = false; return; }
+                m.p.x = m.n.x; m.p.y = m.n.y; mark(m.p);
+            });
             updateHud();
+            if (aliveCount() <= (count > 1 ? 1 : 0)) endGame();
+            else draw();
+        }
+
+        function endGame() {
+            over = true;
+            clearInterval(timer);
+            const survivors = players.filter(p => p.alive);
+            winner = survivors.length === 1 ? 'PLAYER ' + survivors[0].id + ' WINS' : 'DRAW';
             draw();
         }
 
         function draw() {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, W, H);
+            ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
             for (let i = 0; i < occupied.length; i++) {
-                const o = occupied[i];
-                if (o === 0) continue;
+                const o = occupied[i]; if (o === 0) continue;
                 ctx.fillStyle = o.color;
-                const x = (i % cols) * cell, y = Math.floor(i / cols) * cell;
-                ctx.fillRect(x, y, cell - 1, cell - 1);
+                ctx.fillRect((i % cols) * cell, ((i / cols) | 0) * cell, cell - 1, cell - 1);
             }
-            // bright heads
             ctx.fillStyle = '#fff';
-            ctx.fillRect(p1.x * cell, p1.y * cell, cell - 1, cell - 1);
-            ctx.fillRect(p2.x * cell, p2.y * cell, cell - 1, cell - 1);
-
+            players.forEach(p => { if (p.alive) ctx.fillRect(p.x * cell, p.y * cell, cell - 1, cell - 1); });
             if (over) {
-                ctx.fillStyle = 'rgba(0,0,0,0.72)';
-                ctx.fillRect(0, 0, W, H);
+                ctx.fillStyle = 'rgba(0,0,0,0.72)'; ctx.fillRect(0, 0, W, H);
                 centerText([winner, 'Press Restart']);
             }
         }
 
-        function turn(p, dx, dy) {
-            if (p.dx === -dx && p.dy === -dy) return; // no instant reverse
-            p.dx = dx; p.dy = dy;
+        function makeGroup(p, parent) {
+            const g = document.createElement('div');
+            g.className = 'pad-group';
+            const lbl = document.createElement('div');
+            lbl.className = 'pad-label';
+            lbl.textContent = 'P' + p.id;
+            lbl.style.color = p.color;
+            const row = padGroup();
+            row.appendChild(makeBtn('&#8634;', { onPress: () => steer(p, true) }));
+            row.appendChild(makeBtn('&#8635;', { onPress: () => steer(p, false) }));
+            g.appendChild(lbl); g.appendChild(row);
+            parent.appendChild(g);
         }
 
-        function onKey(e) {
-            const k = e.key.toLowerCase();
-            let handled = true;
-            switch (k) {
-                case 'w': turn(p1, 0, -1); break;
-                case 's': turn(p1, 0, 1); break;
-                case 'a': turn(p1, -1, 0); break;
-                case 'd': turn(p1, 1, 0); break;
-                case 'arrowup': turn(p2, 0, -1); break;
-                case 'arrowdown': turn(p2, 0, 1); break;
-                case 'arrowleft': turn(p2, -1, 0); break;
-                case 'arrowright': turn(p2, 1, 0); break;
-                default: handled = false;
-            }
-            if (handled) {
-                e.preventDefault();
-                if (!started) { started = true; hint.textContent = ''; }
-            }
+        function buildControls() {
+            // odd players (1,3) face you at the bottom; even (2,4) sit opposite at the top
+            players.forEach(p => makeGroup(p, p.id % 2 === 1 ? padBottom : padTop));
+            fitCanvas();
         }
 
-        window.addEventListener('keydown', onKey);
-        reset();
-        timer = setInterval(step, 70);
+        // ---- player-count chooser ----
+        function showChooser() {
+            ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+            centerText(['TRON', 'How many players?']);
+            hudLeft.textContent = 'TRON';
+            hudRight.textContent = '';
+            hint.textContent = 'Pick 2, 3 or 4 players.';
+            const row = padGroup();
+            [2, 3, 4].forEach(n => row.appendChild(makeBtn(String(n) + 'P', { className: 'wide', onPress: () => start(n) })));
+            padBottom.appendChild(row);
+        }
 
-        return {
-            stop: function () {
-                clearInterval(timer);
-                window.removeEventListener('keydown', onKey);
-            }
-        };
+        showChooser();
+        return { stop: function () { clearInterval(timer); } };
     }
 
     // =====================================================================
-    //  PONG 2P  (local two-player)
-    // =====================================================================
-    function createPong2P() {
-        const W = canvas.width, H = canvas.height;
-        const pw = 10, ph = 70;
-        const left = { x: 14, y: H / 2 - ph / 2, score: 0 };
-        const right = { x: W - 14 - pw, y: H / 2 - ph / 2, score: 0 };
-        const ball = {};
-        const keys = {};
-        let raf, over = false, winner = '';
-
-        hint.textContent = 'P1: W / S   |   P2: Up / Down. First to 5 wins.';
-
-        function resetBall(dir) {
-            ball.x = W / 2; ball.y = H / 2; ball.r = 6;
-            const angle = (Math.random() * 0.6 - 0.3);
-            const speed = 4.2;
-            ball.vx = dir * speed * Math.cos(angle);
-            ball.vy = speed * Math.sin(angle);
-        }
-
-        function updateHud() {
-            hudLeft.textContent = 'P1: ' + left.score;
-            hudRight.textContent = 'P2: ' + right.score;
-        }
-
-        function move(p, up, down) {
-            const sp = 6;
-            if (keys[up]) p.y -= sp;
-            if (keys[down]) p.y += sp;
-            p.y = Math.max(0, Math.min(H - ph, p.y));
-        }
-
-        function bounce(p) {
-            ball.vx *= -1.06;
-            ball.vy += ((ball.y - (p.y + ph / 2)) / (ph / 2)) * 2;
-        }
-
-        function loop() {
-            if (over) return;
-            move(left, 'w', 's');
-            move(right, 'arrowup', 'arrowdown');
-
-            ball.x += ball.vx;
-            ball.y += ball.vy;
-            if (ball.y - ball.r < 0 || ball.y + ball.r > H) {
-                ball.vy *= -1;
-                ball.y = Math.max(ball.r, Math.min(H - ball.r, ball.y));
-            }
-
-            if (ball.x - ball.r < left.x + pw && ball.x > left.x &&
-                ball.y > left.y && ball.y < left.y + ph && ball.vx < 0) {
-                bounce(left); ball.x = left.x + pw + ball.r;
-            }
-            if (ball.x + ball.r > right.x && ball.x < right.x + pw &&
-                ball.y > right.y && ball.y < right.y + ph && ball.vx > 0) {
-                bounce(right); ball.x = right.x - ball.r;
-            }
-
-            if (ball.x < 0) { right.score++; updateHud(); checkWin(); resetBall(1); }
-            else if (ball.x > W) { left.score++; updateHud(); checkWin(); resetBall(-1); }
-
-            draw();
-            raf = requestAnimationFrame(loop);
-        }
-
-        function checkWin() {
-            if (left.score >= 5) { over = true; winner = 'PLAYER 1 WINS'; }
-            else if (right.score >= 5) { over = true; winner = 'PLAYER 2 WINS'; }
-            if (over) draw();
-        }
-
-        function draw() {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, W, H);
-            ctx.strokeStyle = AMBER;
-            ctx.setLineDash([8, 12]);
-            ctx.beginPath();
-            ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H);
-            ctx.stroke();
-            ctx.setLineDash([]);
-
-            ctx.fillStyle = AMBER;
-            ctx.fillRect(left.x, left.y, pw, ph);
-            ctx.fillStyle = AMBER_BRIGHT;
-            ctx.fillRect(right.x, right.y, pw, ph);
-
-            ctx.fillStyle = '#fff';
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
-            ctx.fill();
-
-            if (over) {
-                ctx.fillStyle = 'rgba(0,0,0,0.72)';
-                ctx.fillRect(0, 0, W, H);
-                centerText([winner, 'Press Restart']);
-            }
-        }
-
-        function onDown(e) {
-            const k = e.key.toLowerCase();
-            if (['w', 's', 'arrowup', 'arrowdown'].includes(k)) { keys[k] = true; e.preventDefault(); }
-        }
-        function onUp(e) { keys[e.key.toLowerCase()] = false; }
-
-        window.addEventListener('keydown', onDown);
-        window.addEventListener('keyup', onUp);
-        updateHud();
-        resetBall(Math.random() < 0.5 ? 1 : -1);
-        raf = requestAnimationFrame(loop);
-
-        return {
-            stop: function () {
-                over = true;
-                cancelAnimationFrame(raf);
-                window.removeEventListener('keydown', onDown);
-                window.removeEventListener('keyup', onUp);
-            }
-        };
-    }
-
-    // =====================================================================
-    //  TANK BATTLE  (local 2-player top-down duel)
+    //  TANK BATTLE  (2-player: turn, thrust, fire)
     // =====================================================================
     function createTanks() {
-        const W = canvas.width, H = canvas.height;
-        const keys = {};
-        let raf, state, winner, cooldown1, cooldown2;
+        const W = 360, H = 420;
+        setCanvasSize(W, H);
+        let raf, state, winner;
         const bullets = [];
         const walls = [
-            { x: 120, y: 90, w: 20, h: 110 },
-            { x: 280, y: 220, w: 20, h: 110 },
-            { x: 180, y: 30, w: 60, h: 18 },
-            { x: 180, y: 372, w: 60, h: 18 },
-            { x: 40, y: 200, w: 90, h: 18 },
-            { x: 290, y: 200, w: 90, h: 18 }
+            { x: 100, y: 80, w: 18, h: 90 },
+            { x: 242, y: 80, w: 18, h: 90 },
+            { x: 100, y: 250, w: 18, h: 90 },
+            { x: 242, y: 250, w: 18, h: 90 },
+            { x: 160, y: 40, w: 40, h: 16 },
+            { x: 160, y: 364, w: 40, h: 16 },
+            { x: 165, y: 200, w: 30, h: 20 }
         ];
+        const SIZE = 16;
         let t1, t2;
 
-        hint.textContent = 'P1: WASD move, Space fire  |  P2: Arrows move, Enter fire. First to 5.';
+        hint.textContent = 'Turn, thrust and fire. First to 5 hits.';
 
         function reset() {
-            t1 = { x: 40, y: H / 2, a: 0, score: t1 ? t1.score : 0, color: AMBER, alive: true };
-            t2 = { x: W - 40, y: H / 2, a: Math.PI, score: t2 ? t2.score : 0, color: AMBER_BRIGHT, alive: true };
-            bullets.length = 0;
-            cooldown1 = 0; cooldown2 = 0;
-            state = 'play';
-            winner = '';
+            t1 = { x: W / 2, y: H - 40, a: -Math.PI / 2, score: t1 ? t1.score : 0, color: AMBER, fire: false, cd: 0, turn: 0, thrust: false };
+            t2 = { x: W / 2, y: 40, a: Math.PI / 2, score: t2 ? t2.score : 0, color: AMBER_BRIGHT, fire: false, cd: 0, turn: 0, thrust: false };
+            bullets.length = 0; state = 'play'; winner = '';
             updateHud();
         }
-
-        function updateHud() {
-            hudLeft.textContent = 'P1: ' + t1.score;
-            hudRight.textContent = 'P2: ' + t2.score;
-        }
-
-        const SIZE = 16;
+        function updateHud() { hudLeft.textContent = 'P1: ' + t1.score; hudRight.textContent = 'P2: ' + t2.score; }
         function rectHit(px, py, r) {
-            for (const w of walls) {
-                if (px + r > w.x && px - r < w.x + w.w &&
-                    py + r > w.y && py - r < w.y + w.h) return true;
-            }
+            for (const w of walls)
+                if (px + r > w.x && px - r < w.x + w.w && py + r > w.y && py - r < w.y + w.h) return true;
             return false;
         }
-
-        function moveTank(t, fwd, turnL, turnR) {
-            const rot = 0.06, sp = 2.2;
-            if (keys[turnL]) t.a -= rot;
-            if (keys[turnR]) t.a += rot;
-            if (keys[fwd]) {
-                const nx = t.x + Math.cos(t.a) * sp;
-                const ny = t.y + Math.sin(t.a) * sp;
-                if (!rectHit(nx, ny, SIZE / 2) &&
-                    nx > SIZE / 2 && nx < W - SIZE / 2 && ny > SIZE / 2 && ny < H - SIZE / 2) {
+        function updateTank(t) {
+            if (t.turn) t.a += t.turn * 0.06;
+            if (t.thrust) {
+                const nx = t.x + Math.cos(t.a) * 2.2, ny = t.y + Math.sin(t.a) * 2.2;
+                if (!rectHit(nx, ny, SIZE / 2) && nx > SIZE / 2 && nx < W - SIZE / 2 && ny > SIZE / 2 && ny < H - SIZE / 2) {
                     t.x = nx; t.y = ny;
                 }
             }
+            if (t.cd > 0) t.cd--;
+            if (t.fire && t.cd === 0) {
+                bullets.push({
+                    x: t.x + Math.cos(t.a) * (SIZE / 2 + 4), y: t.y + Math.sin(t.a) * (SIZE / 2 + 4),
+                    vx: Math.cos(t.a) * 5, vy: Math.sin(t.a) * 5, owner: t, life: 130
+                });
+                t.cd = 32;
+            }
         }
-
-        function fire(t) {
-            bullets.push({
-                x: t.x + Math.cos(t.a) * (SIZE / 2 + 4),
-                y: t.y + Math.sin(t.a) * (SIZE / 2 + 4),
-                vx: Math.cos(t.a) * 5, vy: Math.sin(t.a) * 5,
-                owner: t, life: 140
-            });
-        }
-
         function loop() {
             if (state !== 'play') return;
-            moveTank(t1, 'w', 'a', 'd');
-            moveTank(t2, 'arrowup', 'arrowleft', 'arrowright');
-
-            if (cooldown1 > 0) cooldown1--;
-            if (cooldown2 > 0) cooldown2--;
-            if (keys[' '] && cooldown1 === 0) { fire(t1); cooldown1 = 35; }
-            if (keys['enter'] && cooldown2 === 0) { fire(t2); cooldown2 = 35; }
-
+            updateTank(t1); updateTank(t2);
             for (let i = bullets.length - 1; i >= 0; i--) {
                 const b = bullets[i];
                 b.x += b.vx; b.y += b.vy; b.life--;
-                // wall bounce
                 if (b.x < 0 || b.x > W) { b.vx *= -1; b.x = Math.max(0, Math.min(W, b.x)); }
                 if (b.y < 0 || b.y > H) { b.vy *= -1; b.y = Math.max(0, Math.min(H, b.y)); }
                 for (const w of walls) {
                     if (b.x > w.x && b.x < w.x + w.w && b.y > w.y && b.y < w.y + w.h) {
-                        // reflect off nearest axis
-                        const overlapX = Math.min(b.x - w.x, w.x + w.w - b.x);
-                        const overlapY = Math.min(b.y - w.y, w.y + w.h - b.y);
-                        if (overlapX < overlapY) b.vx *= -1; else b.vy *= -1;
+                        const ox = Math.min(b.x - w.x, w.x + w.w - b.x);
+                        const oy = Math.min(b.y - w.y, w.y + w.h - b.y);
+                        if (ox < oy) b.vx *= -1; else b.vy *= -1;
                         b.x += b.vx; b.y += b.vy;
                     }
                 }
-                // hits
                 const foe = b.owner === t1 ? t2 : t1;
                 if (Math.hypot(b.x - foe.x, b.y - foe.y) < SIZE / 2 + 2) {
-                    b.owner.score++;
-                    bullets.splice(i, 1);
-                    state = 'round';
-                    winner = (b.owner === t1 ? 'PLAYER 1' : 'PLAYER 2') + ' SCORES';
-                    updateHud();
+                    b.owner.score++; bullets.splice(i, 1); updateHud();
                     if (b.owner.score >= 5) {
-                        state = 'over';
-                        winner = (b.owner === t1 ? 'PLAYER 1 WINS' : 'PLAYER 2 WINS');
+                        state = 'over'; winner = (b.owner === t1 ? 'PLAYER 1 WINS' : 'PLAYER 2 WINS'); draw(); return;
                     }
-                    draw();
-                    if (state === 'round') setTimeout(function () {
+                    state = 'round'; winner = (b.owner === t1 ? 'PLAYER 1' : 'PLAYER 2') + ' SCORES'; draw();
+                    setTimeout(function () {
                         if (state === 'round') { respawn(); state = 'play'; raf = requestAnimationFrame(loop); }
-                    }, 900);
+                    }, 850);
                     return;
                 }
                 if (b.life <= 0) bullets.splice(i, 1);
             }
-
             draw();
             raf = requestAnimationFrame(loop);
         }
-
         function respawn() {
-            t1.x = 40; t1.y = H / 2; t1.a = 0;
-            t2.x = W - 40; t2.y = H / 2; t2.a = Math.PI;
+            t1.x = W / 2; t1.y = H - 40; t1.a = -Math.PI / 2;
+            t2.x = W / 2; t2.y = 40; t2.a = Math.PI / 2;
+            t1.fire = t2.fire = false; t1.thrust = t2.thrust = false; t1.turn = t2.turn = 0;
             bullets.length = 0;
         }
-
         function drawTank(t) {
-            ctx.save();
-            ctx.translate(t.x, t.y);
-            ctx.rotate(t.a);
-            ctx.fillStyle = t.color;
-            ctx.fillRect(-SIZE / 2, -SIZE / 2, SIZE, SIZE);
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(0, -2, SIZE / 2 + 4, 4); // barrel
+            ctx.save(); ctx.translate(t.x, t.y); ctx.rotate(t.a);
+            ctx.fillStyle = t.color; ctx.fillRect(-SIZE / 2, -SIZE / 2, SIZE, SIZE);
+            ctx.fillStyle = '#fff'; ctx.fillRect(0, -2, SIZE / 2 + 4, 4);
             ctx.restore();
         }
-
         function draw() {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, W, H);
-
-            ctx.fillStyle = AMBER;
-            ctx.globalAlpha = 0.55;
+            ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+            ctx.fillStyle = AMBER; ctx.globalAlpha = 0.55;
             for (const w of walls) ctx.fillRect(w.x, w.y, w.w, w.h);
             ctx.globalAlpha = 1;
-
-            drawTank(t1);
-            drawTank(t2);
-
+            drawTank(t1); drawTank(t2);
             ctx.fillStyle = '#fff';
-            for (const b of bullets) {
-                ctx.beginPath();
-                ctx.arc(b.x, b.y, 3, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
+            for (const b of bullets) { ctx.beginPath(); ctx.arc(b.x, b.y, 3, 0, Math.PI * 2); ctx.fill(); }
             if (state === 'round' || state === 'over') {
-                ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                ctx.fillRect(0, 0, W, H);
+                ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(0, 0, W, H);
                 centerText(state === 'over' ? [winner, 'Press Restart'] : [winner]);
             }
         }
 
-        function onDown(e) {
-            const k = e.key.toLowerCase();
-            keys[k] = true;
-            if (['w', 'a', 's', 'd', ' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'enter'].includes(k)) {
-                e.preventDefault();
-            }
+        function controlsFor(t, parent) {
+            const row = padGroup();
+            row.appendChild(makeBtn('&#8634;', { onPress: () => t.turn = -1, onRelease: () => { if (t.turn < 0) t.turn = 0; } }));
+            row.appendChild(makeBtn('&#9650;', { onPress: () => t.thrust = true, onRelease: () => t.thrust = false }));
+            row.appendChild(makeBtn('&#8635;', { onPress: () => t.turn = 1, onRelease: () => { if (t.turn > 0) t.turn = 0; } }));
+            row.appendChild(makeBtn('&#128163;', { className: 'wide', onPress: () => t.fire = true, onRelease: () => t.fire = false }));
+            parent.appendChild(row);
         }
-        function onUp(e) { keys[e.key.toLowerCase()] = false; }
-
-        window.addEventListener('keydown', onDown);
-        window.addEventListener('keyup', onUp);
         reset();
-        raf = requestAnimationFrame(loop);
+        controlsFor(t1, padBottom);
+        controlsFor(t2, padTop);
 
-        return {
-            stop: function () {
-                state = 'over';
-                cancelAnimationFrame(raf);
-                window.removeEventListener('keydown', onDown);
-                window.removeEventListener('keyup', onUp);
-            }
-        };
+        raf = requestAnimationFrame(loop);
+        return { stop: function () { state = 'over'; cancelAnimationFrame(raf); } };
     }
 
     const GAMES = {
