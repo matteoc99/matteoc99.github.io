@@ -102,6 +102,14 @@
             opacity: 0.85;
         }
 
+        .menu-divider {
+            flex-basis: 100%;
+            text-align: center;
+            opacity: 0.7;
+            letter-spacing: 2px;
+            margin: 10px 0 0;
+        }
+
         /* Stage */
         .stage {
             display: none;
@@ -183,6 +191,21 @@
         <button class="game-card" data-game="breakout">
             <h3>Breakout</h3>
             <p>Smash every brick.<br>&larr; &rarr; / Mouse</p>
+        </button>
+
+        <div class="menu-divider">- 2 Players -</div>
+
+        <button class="game-card" data-game="tron">
+            <h3>Tron</h3>
+            <p>Light cycles. Don't crash.<br>P1: WASD &nbsp; P2: Arrows</p>
+        </button>
+        <button class="game-card" data-game="pong2p">
+            <h3>Pong 2P</h3>
+            <p>Duel to 5 points.<br>P1: W S &nbsp; P2: &uarr; &darr;</p>
+        </button>
+        <button class="game-card" data-game="tanks">
+            <h3>Tank Battle</h3>
+            <p>Shoot first, win. First to 5.<br>P1: WASD+Space &nbsp; P2: Arrows+Enter</p>
         </button>
     </div>
 
@@ -695,10 +718,445 @@
         };
     }
 
+    // =====================================================================
+    //  TRON  (local 2-player light cycles)
+    // =====================================================================
+    function createTron() {
+        const W = canvas.width, H = canvas.height;
+        const cell = 6;
+        const cols = Math.floor(W / cell), rows = Math.floor(H / cell);
+        let occupied, p1, p2, timer, over, started, winner;
+
+        hint.textContent = 'P1 (amber): WASD  |  P2 (bright): Arrows. Press to start.';
+
+        function reset() {
+            occupied = new Array(cols * rows).fill(0);
+            p1 = { x: Math.floor(cols * 0.25), y: Math.floor(rows / 2), dx: 1, dy: 0, alive: true, score: p1 ? p1.score : 0, color: AMBER };
+            p2 = { x: Math.floor(cols * 0.75), y: Math.floor(rows / 2), dx: -1, dy: 0, alive: true, score: p2 ? p2.score : 0, color: AMBER_BRIGHT };
+            over = false;
+            started = false;
+            winner = '';
+            mark(p1); mark(p2);
+            updateHud();
+            draw();
+        }
+
+        function idx(x, y) { return y * cols + x; }
+        function mark(p) { occupied[idx(p.x, p.y)] = p; }
+
+        function updateHud() {
+            hudLeft.textContent = 'P1: ' + p1.score;
+            hudRight.textContent = 'P2: ' + p2.score;
+        }
+
+        function step() {
+            if (over || !started) return;
+
+            const n1 = { x: p1.x + p1.dx, y: p1.y + p1.dy };
+            const n2 = { x: p2.x + p2.dx, y: p2.y + p2.dy };
+
+            const c1 = collides(n1);
+            const c2 = collides(n2);
+            const headOn = n1.x === n2.x && n1.y === n2.y;
+
+            if (c1 || c2 || headOn) {
+                p1.alive = !(c1 || headOn);
+                p2.alive = !(c2 || headOn);
+                endRound();
+                return;
+            }
+
+            p1.x = n1.x; p1.y = n1.y; mark(p1);
+            p2.x = n2.x; p2.y = n2.y; mark(p2);
+            draw();
+        }
+
+        function collides(n) {
+            if (n.x < 0 || n.y < 0 || n.x >= cols || n.y >= rows) return true;
+            return occupied[idx(n.x, n.y)] !== 0;
+        }
+
+        function endRound() {
+            over = true;
+            if (p1.alive && !p2.alive) { winner = 'PLAYER 1 WINS'; p1.score++; }
+            else if (p2.alive && !p1.alive) { winner = 'PLAYER 2 WINS'; p2.score++; }
+            else { winner = 'DRAW'; }
+            updateHud();
+            draw();
+        }
+
+        function draw() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, W, H);
+            for (let i = 0; i < occupied.length; i++) {
+                const o = occupied[i];
+                if (o === 0) continue;
+                ctx.fillStyle = o.color;
+                const x = (i % cols) * cell, y = Math.floor(i / cols) * cell;
+                ctx.fillRect(x, y, cell - 1, cell - 1);
+            }
+            // bright heads
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(p1.x * cell, p1.y * cell, cell - 1, cell - 1);
+            ctx.fillRect(p2.x * cell, p2.y * cell, cell - 1, cell - 1);
+
+            if (over) {
+                ctx.fillStyle = 'rgba(0,0,0,0.72)';
+                ctx.fillRect(0, 0, W, H);
+                centerText([winner, 'Press Restart']);
+            }
+        }
+
+        function turn(p, dx, dy) {
+            if (p.dx === -dx && p.dy === -dy) return; // no instant reverse
+            p.dx = dx; p.dy = dy;
+        }
+
+        function onKey(e) {
+            const k = e.key.toLowerCase();
+            let handled = true;
+            switch (k) {
+                case 'w': turn(p1, 0, -1); break;
+                case 's': turn(p1, 0, 1); break;
+                case 'a': turn(p1, -1, 0); break;
+                case 'd': turn(p1, 1, 0); break;
+                case 'arrowup': turn(p2, 0, -1); break;
+                case 'arrowdown': turn(p2, 0, 1); break;
+                case 'arrowleft': turn(p2, -1, 0); break;
+                case 'arrowright': turn(p2, 1, 0); break;
+                default: handled = false;
+            }
+            if (handled) {
+                e.preventDefault();
+                if (!started) { started = true; hint.textContent = ''; }
+            }
+        }
+
+        window.addEventListener('keydown', onKey);
+        reset();
+        timer = setInterval(step, 70);
+
+        return {
+            stop: function () {
+                clearInterval(timer);
+                window.removeEventListener('keydown', onKey);
+            }
+        };
+    }
+
+    // =====================================================================
+    //  PONG 2P  (local two-player)
+    // =====================================================================
+    function createPong2P() {
+        const W = canvas.width, H = canvas.height;
+        const pw = 10, ph = 70;
+        const left = { x: 14, y: H / 2 - ph / 2, score: 0 };
+        const right = { x: W - 14 - pw, y: H / 2 - ph / 2, score: 0 };
+        const ball = {};
+        const keys = {};
+        let raf, over = false, winner = '';
+
+        hint.textContent = 'P1: W / S   |   P2: Up / Down. First to 5 wins.';
+
+        function resetBall(dir) {
+            ball.x = W / 2; ball.y = H / 2; ball.r = 6;
+            const angle = (Math.random() * 0.6 - 0.3);
+            const speed = 4.2;
+            ball.vx = dir * speed * Math.cos(angle);
+            ball.vy = speed * Math.sin(angle);
+        }
+
+        function updateHud() {
+            hudLeft.textContent = 'P1: ' + left.score;
+            hudRight.textContent = 'P2: ' + right.score;
+        }
+
+        function move(p, up, down) {
+            const sp = 6;
+            if (keys[up]) p.y -= sp;
+            if (keys[down]) p.y += sp;
+            p.y = Math.max(0, Math.min(H - ph, p.y));
+        }
+
+        function bounce(p) {
+            ball.vx *= -1.06;
+            ball.vy += ((ball.y - (p.y + ph / 2)) / (ph / 2)) * 2;
+        }
+
+        function loop() {
+            if (over) return;
+            move(left, 'w', 's');
+            move(right, 'arrowup', 'arrowdown');
+
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+            if (ball.y - ball.r < 0 || ball.y + ball.r > H) {
+                ball.vy *= -1;
+                ball.y = Math.max(ball.r, Math.min(H - ball.r, ball.y));
+            }
+
+            if (ball.x - ball.r < left.x + pw && ball.x > left.x &&
+                ball.y > left.y && ball.y < left.y + ph && ball.vx < 0) {
+                bounce(left); ball.x = left.x + pw + ball.r;
+            }
+            if (ball.x + ball.r > right.x && ball.x < right.x + pw &&
+                ball.y > right.y && ball.y < right.y + ph && ball.vx > 0) {
+                bounce(right); ball.x = right.x - ball.r;
+            }
+
+            if (ball.x < 0) { right.score++; updateHud(); checkWin(); resetBall(1); }
+            else if (ball.x > W) { left.score++; updateHud(); checkWin(); resetBall(-1); }
+
+            draw();
+            raf = requestAnimationFrame(loop);
+        }
+
+        function checkWin() {
+            if (left.score >= 5) { over = true; winner = 'PLAYER 1 WINS'; }
+            else if (right.score >= 5) { over = true; winner = 'PLAYER 2 WINS'; }
+            if (over) draw();
+        }
+
+        function draw() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, W, H);
+            ctx.strokeStyle = AMBER;
+            ctx.setLineDash([8, 12]);
+            ctx.beginPath();
+            ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = AMBER;
+            ctx.fillRect(left.x, left.y, pw, ph);
+            ctx.fillStyle = AMBER_BRIGHT;
+            ctx.fillRect(right.x, right.y, pw, ph);
+
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (over) {
+                ctx.fillStyle = 'rgba(0,0,0,0.72)';
+                ctx.fillRect(0, 0, W, H);
+                centerText([winner, 'Press Restart']);
+            }
+        }
+
+        function onDown(e) {
+            const k = e.key.toLowerCase();
+            if (['w', 's', 'arrowup', 'arrowdown'].includes(k)) { keys[k] = true; e.preventDefault(); }
+        }
+        function onUp(e) { keys[e.key.toLowerCase()] = false; }
+
+        window.addEventListener('keydown', onDown);
+        window.addEventListener('keyup', onUp);
+        updateHud();
+        resetBall(Math.random() < 0.5 ? 1 : -1);
+        raf = requestAnimationFrame(loop);
+
+        return {
+            stop: function () {
+                over = true;
+                cancelAnimationFrame(raf);
+                window.removeEventListener('keydown', onDown);
+                window.removeEventListener('keyup', onUp);
+            }
+        };
+    }
+
+    // =====================================================================
+    //  TANK BATTLE  (local 2-player top-down duel)
+    // =====================================================================
+    function createTanks() {
+        const W = canvas.width, H = canvas.height;
+        const keys = {};
+        let raf, state, winner, cooldown1, cooldown2;
+        const bullets = [];
+        const walls = [
+            { x: 120, y: 90, w: 20, h: 110 },
+            { x: 280, y: 220, w: 20, h: 110 },
+            { x: 180, y: 30, w: 60, h: 18 },
+            { x: 180, y: 372, w: 60, h: 18 },
+            { x: 40, y: 200, w: 90, h: 18 },
+            { x: 290, y: 200, w: 90, h: 18 }
+        ];
+        let t1, t2;
+
+        hint.textContent = 'P1: WASD move, Space fire  |  P2: Arrows move, Enter fire. First to 5.';
+
+        function reset() {
+            t1 = { x: 40, y: H / 2, a: 0, score: t1 ? t1.score : 0, color: AMBER, alive: true };
+            t2 = { x: W - 40, y: H / 2, a: Math.PI, score: t2 ? t2.score : 0, color: AMBER_BRIGHT, alive: true };
+            bullets.length = 0;
+            cooldown1 = 0; cooldown2 = 0;
+            state = 'play';
+            winner = '';
+            updateHud();
+        }
+
+        function updateHud() {
+            hudLeft.textContent = 'P1: ' + t1.score;
+            hudRight.textContent = 'P2: ' + t2.score;
+        }
+
+        const SIZE = 16;
+        function rectHit(px, py, r) {
+            for (const w of walls) {
+                if (px + r > w.x && px - r < w.x + w.w &&
+                    py + r > w.y && py - r < w.y + w.h) return true;
+            }
+            return false;
+        }
+
+        function moveTank(t, fwd, turnL, turnR) {
+            const rot = 0.06, sp = 2.2;
+            if (keys[turnL]) t.a -= rot;
+            if (keys[turnR]) t.a += rot;
+            if (keys[fwd]) {
+                const nx = t.x + Math.cos(t.a) * sp;
+                const ny = t.y + Math.sin(t.a) * sp;
+                if (!rectHit(nx, ny, SIZE / 2) &&
+                    nx > SIZE / 2 && nx < W - SIZE / 2 && ny > SIZE / 2 && ny < H - SIZE / 2) {
+                    t.x = nx; t.y = ny;
+                }
+            }
+        }
+
+        function fire(t) {
+            bullets.push({
+                x: t.x + Math.cos(t.a) * (SIZE / 2 + 4),
+                y: t.y + Math.sin(t.a) * (SIZE / 2 + 4),
+                vx: Math.cos(t.a) * 5, vy: Math.sin(t.a) * 5,
+                owner: t, life: 140
+            });
+        }
+
+        function loop() {
+            if (state !== 'play') return;
+            moveTank(t1, 'w', 'a', 'd');
+            moveTank(t2, 'arrowup', 'arrowleft', 'arrowright');
+
+            if (cooldown1 > 0) cooldown1--;
+            if (cooldown2 > 0) cooldown2--;
+            if (keys[' '] && cooldown1 === 0) { fire(t1); cooldown1 = 35; }
+            if (keys['enter'] && cooldown2 === 0) { fire(t2); cooldown2 = 35; }
+
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const b = bullets[i];
+                b.x += b.vx; b.y += b.vy; b.life--;
+                // wall bounce
+                if (b.x < 0 || b.x > W) { b.vx *= -1; b.x = Math.max(0, Math.min(W, b.x)); }
+                if (b.y < 0 || b.y > H) { b.vy *= -1; b.y = Math.max(0, Math.min(H, b.y)); }
+                for (const w of walls) {
+                    if (b.x > w.x && b.x < w.x + w.w && b.y > w.y && b.y < w.y + w.h) {
+                        // reflect off nearest axis
+                        const overlapX = Math.min(b.x - w.x, w.x + w.w - b.x);
+                        const overlapY = Math.min(b.y - w.y, w.y + w.h - b.y);
+                        if (overlapX < overlapY) b.vx *= -1; else b.vy *= -1;
+                        b.x += b.vx; b.y += b.vy;
+                    }
+                }
+                // hits
+                const foe = b.owner === t1 ? t2 : t1;
+                if (Math.hypot(b.x - foe.x, b.y - foe.y) < SIZE / 2 + 2) {
+                    b.owner.score++;
+                    bullets.splice(i, 1);
+                    state = 'round';
+                    winner = (b.owner === t1 ? 'PLAYER 1' : 'PLAYER 2') + ' SCORES';
+                    updateHud();
+                    if (b.owner.score >= 5) {
+                        state = 'over';
+                        winner = (b.owner === t1 ? 'PLAYER 1 WINS' : 'PLAYER 2 WINS');
+                    }
+                    draw();
+                    if (state === 'round') setTimeout(function () {
+                        if (state === 'round') { respawn(); state = 'play'; raf = requestAnimationFrame(loop); }
+                    }, 900);
+                    return;
+                }
+                if (b.life <= 0) bullets.splice(i, 1);
+            }
+
+            draw();
+            raf = requestAnimationFrame(loop);
+        }
+
+        function respawn() {
+            t1.x = 40; t1.y = H / 2; t1.a = 0;
+            t2.x = W - 40; t2.y = H / 2; t2.a = Math.PI;
+            bullets.length = 0;
+        }
+
+        function drawTank(t) {
+            ctx.save();
+            ctx.translate(t.x, t.y);
+            ctx.rotate(t.a);
+            ctx.fillStyle = t.color;
+            ctx.fillRect(-SIZE / 2, -SIZE / 2, SIZE, SIZE);
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, -2, SIZE / 2 + 4, 4); // barrel
+            ctx.restore();
+        }
+
+        function draw() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, W, H);
+
+            ctx.fillStyle = AMBER;
+            ctx.globalAlpha = 0.55;
+            for (const w of walls) ctx.fillRect(w.x, w.y, w.w, w.h);
+            ctx.globalAlpha = 1;
+
+            drawTank(t1);
+            drawTank(t2);
+
+            ctx.fillStyle = '#fff';
+            for (const b of bullets) {
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            if (state === 'round' || state === 'over') {
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillRect(0, 0, W, H);
+                centerText(state === 'over' ? [winner, 'Press Restart'] : [winner]);
+            }
+        }
+
+        function onDown(e) {
+            const k = e.key.toLowerCase();
+            keys[k] = true;
+            if (['w', 'a', 's', 'd', ' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'enter'].includes(k)) {
+                e.preventDefault();
+            }
+        }
+        function onUp(e) { keys[e.key.toLowerCase()] = false; }
+
+        window.addEventListener('keydown', onDown);
+        window.addEventListener('keyup', onUp);
+        reset();
+        raf = requestAnimationFrame(loop);
+
+        return {
+            stop: function () {
+                state = 'over';
+                cancelAnimationFrame(raf);
+                window.removeEventListener('keydown', onDown);
+                window.removeEventListener('keyup', onUp);
+            }
+        };
+    }
+
     const GAMES = {
         snake: createSnake,
         pong: createPong,
-        breakout: createBreakout
+        breakout: createBreakout,
+        tron: createTron,
+        pong2p: createPong2P,
+        tanks: createTanks
     };
 </script>
 </body>
