@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Mini Games</title>
     <style>
         :root {
@@ -109,17 +109,43 @@
             margin: 8px 0 0;
         }
 
-        /* ---- Game stage ---- */
-        .stage { display: none; width: 100%; flex-direction: column; align-items: center; }
-        .stage.active { display: flex; }
+        /* ---- Game stage (full-screen app-like overlay) ---- */
+        .stage { display: none; }
+        .stage.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            background: #000;
+            z-index: 20;
+            gap: 2px;
+            touch-action: none;
+            padding: max(4px, env(safe-area-inset-top)) max(4px, env(safe-area-inset-right))
+                     max(6px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left));
+        }
 
         .hud {
             display: flex;
             justify-content: space-between;
             width: 100%;
             max-width: 460px;
-            margin: 4px auto;
-            font-size: 1em;
+            font-size: 0.9em;
+            padding: 2px 6px;
+            flex: 0 0 auto;
+        }
+
+        .canvas-wrap {
+            position: relative;
+            flex: 1 1 auto;
+            min-height: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         canvas {
@@ -127,12 +153,11 @@
             border: 1px solid var(--amber);
             border-radius: 5px;
             display: block;
-            margin: 0 auto;
             touch-action: none;
             box-shadow: 0 0 12px rgba(131, 94, 12, 0.4);
+            max-width: 100%;
+            max-height: 100%;
         }
-
-        .canvas-wrap { position: relative; display: inline-block; }
 
         .pause-overlay {
             position: absolute;
@@ -165,10 +190,12 @@
         }
 
         .hint {
-            font-size: 0.8em;
+            font-size: 0.72em;
             opacity: 0.8;
-            margin: 6px 0;
-            min-height: 1.1em;
+            margin: 3px 0;
+            min-height: 1em;
+            flex: 0 0 auto;
+            padding: 0 8px;
         }
 
         /* ---- Touch control pads ---- */
@@ -176,10 +203,11 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 16px;
+            gap: clamp(8px, 3vw, 16px);
             flex-wrap: wrap;
             width: 100%;
-            padding: 6px;
+            padding: 4px;
+            flex: 0 0 auto;
             user-select: none;
             touch-action: none;
         }
@@ -192,9 +220,9 @@
         .pad-label { font-size: 0.75em; letter-spacing: 1px; }
 
         .pad-btn {
-            min-width: 60px;
-            min-height: 60px;
-            font-size: 1.4em;
+            min-width: clamp(46px, 13vw, 62px);
+            min-height: clamp(46px, 7.5vh, 58px);
+            font-size: clamp(1.1em, 4vw, 1.4em);
             background: transparent;
             color: var(--amber);
             border: 1px solid var(--amber);
@@ -205,7 +233,7 @@
             user-select: none;
             transition: background 0.05s, box-shadow 0.05s;
         }
-        .pad-btn.wide { min-width: 110px; }
+        .pad-btn.wide { min-width: clamp(80px, 26vw, 110px); }
         .pad-btn.active {
             background: rgba(199, 149, 32, 0.25);
             box-shadow: 0 0 10px rgba(199, 149, 32, 0.5);
@@ -213,11 +241,12 @@
         }
 
         .controls {
-            margin-top: 12px;
+            margin-top: 4px;
             display: flex;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
             justify-content: center;
+            flex: 0 0 auto;
         }
         button.btn {
             background: transparent;
@@ -225,13 +254,17 @@
             border: 1px solid var(--amber);
             border-radius: 5px;
             font-family: inherit;
-            font-size: 1em;
-            padding: 10px 18px;
+            font-size: 0.85em;
+            padding: 7px 12px;
             cursor: pointer;
         }
         button.btn:active { background: rgba(199, 149, 32, 0.2); }
 
         footer { margin: 18px 0 8px; font-size: 0.85em; }
+
+        /* lock the page behind the full-screen stage while playing */
+        html, body { overscroll-behavior: none; }
+        body.playing { overflow: hidden; }
     </style>
 </head>
 <body>
@@ -282,17 +315,17 @@
             <span id="hudLeft">SCORE: 0</span>
             <span id="hudRight">BEST: 0</span>
         </div>
-        <div class="canvas-wrap">
+        <div class="canvas-wrap" id="canvasWrap">
             <canvas id="canvas" width="360" height="360"></canvas>
             <div id="pauseOverlay" class="pause-overlay">PAUSED</div>
         </div>
         <div id="hint" class="hint"></div>
         <div id="padBottom" class="pad-area"></div>
         <div class="controls">
-            <button class="btn" id="restartBtn">Restart</button>
-            <button class="btn" id="pauseBtn">Pause</button>
-            <button class="btn" id="soundBtn">Sound: On</button>
-            <button class="btn" id="menuBtn">&larr; Menu</button>
+            <button class="btn" id="restartBtn" title="Restart" aria-label="Restart">&#8635;</button>
+            <button class="btn" id="pauseBtn" title="Pause" aria-label="Pause">&#10074;&#10074;</button>
+            <button class="btn" id="soundBtn" title="Sound" aria-label="Toggle sound">&#128266;</button>
+            <button class="btn" id="menuBtn" title="Menu" aria-label="Back to menu">&#9776;</button>
         </div>
     </div>
 
@@ -326,6 +359,7 @@
     const hint = document.getElementById('hint');
     const padTop = document.getElementById('padTop');
     const padBottom = document.getElementById('padBottom');
+    const canvasWrap = document.getElementById('canvasWrap');
     const restartBtn = document.getElementById('restartBtn');
     const menuBtn = document.getElementById('menuBtn');
     const pauseBtn = document.getElementById('pauseBtn');
@@ -388,22 +422,27 @@
     function setBest(n, v) { if (v > getBest(n)) localStorage.setItem(bestKey(n), String(v)); }
 
     // ---- Responsive canvas sizing ----
+    // Fit the canvas into whatever space the flex layout leaves for it,
+    // measured live — so pads, hud and controls always stay on-screen.
     function setCanvasSize(w, h) {
         canvas.width = w;
         canvas.height = h;
         fitCanvas();
     }
     function fitCanvas() {
+        const availW = canvasWrap.clientWidth;
+        const availH = canvasWrap.clientHeight;
+        if (!availW || !availH) return;
         const aspect = canvas.width / canvas.height;
-        const maxW = Math.min(window.innerWidth - 24, 460);
-        const twoPlayer = padTop.children.length > 0;
-        const maxH = window.innerHeight * (twoPlayer ? 0.42 : 0.55);
-        let w = maxW, h = w / aspect;
-        if (h > maxH) { h = maxH; w = h * aspect; }
-        canvas.style.width = w + 'px';
-        canvas.style.height = h + 'px';
+        let w = availW, h = w / aspect;
+        if (h > availH) { h = availH; w = h * aspect; }
+        canvas.style.width = Math.floor(w) + 'px';
+        canvas.style.height = Math.floor(h) + 'px';
     }
     window.addEventListener('resize', fitCanvas);
+    window.addEventListener('orientationchange', function () { setTimeout(fitCanvas, 120); });
+    // Refit whenever the available area changes (pads added/removed, rotation, etc.)
+    if (window.ResizeObserver) new ResizeObserver(fitCanvas).observe(canvasWrap);
 
     // Map a pointer/touch position to canvas coordinates
     function canvasPos(clientX, clientY) {
@@ -460,7 +499,8 @@
     function setPaused(p) {
         paused = p;
         pauseOverlay.classList.toggle('show', p);
-        pauseBtn.textContent = p ? 'Resume' : 'Pause';
+        pauseBtn.innerHTML = p ? '&#9654;' : '&#10074;&#10074;';
+        pauseBtn.setAttribute('aria-label', p ? 'Resume' : 'Pause');
     }
 
     function showMenu() {
@@ -497,10 +537,10 @@
     });
     soundBtn.addEventListener('click', function () {
         const muted = Sound.toggle();
-        soundBtn.textContent = 'Sound: ' + (muted ? 'Off' : 'On');
+        soundBtn.innerHTML = muted ? '&#128263;' : '&#128266;';
         if (!muted) { Sound.resume(); Sound.blip(); }
     });
-    soundBtn.textContent = 'Sound: ' + (Sound.isMuted() ? 'Off' : 'On');
+    soundBtn.innerHTML = Sound.isMuted() ? '&#128263;' : '&#128266;';
 
     document.querySelectorAll('.game-card').forEach(function (card) {
         card.addEventListener('click', function () {
